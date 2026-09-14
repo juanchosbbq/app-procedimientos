@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="only light">
+<title>Juancho's BBQ · Procedimientos de equipo (demo)</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Staatliches&family=Bebas+Neue&family=Roboto:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+html{background:#FFFDE8;color-scheme:only light}
+:root{color-scheme:only light;
+  --paper:#FFFDE8; --ink:#0F0F0F; --steel:#6B6357; --line:#E9E3C8;
+  --red:#B61829; --sauce:#68121F; --teal:#12BCBC; --card:#FFFFFF;
+  --ban-bg:#68121F; --cream:#FFFDE8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:var(--paper);color:var(--ink);font-family:'Roboto',system-ui,sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px 48px}
+.display{font-family:'Staatliches',sans-serif;letter-spacing:.03em;text-transform:uppercase;font-weight:400}
+.mono{font-family:'Bebas Neue',sans-serif;letter-spacing:.04em}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+button:focus-visible,input:focus-visible{outline:3px solid var(--red);outline-offset:2px}
+.tape{height:12px;background:repeating-linear-gradient(90deg,var(--red) 0 6px,var(--ink) 6px 24px)}
+.login{min-height:100vh;display:flex;flex-direction:column}
+.login-body{flex:1;display:flex;flex-direction:column;justify-content:center;max-width:420px;width:100%;margin:0 auto;padding:32px 24px}
+.brand{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:.12em;color:var(--red)}
+.login h1{font-size:52px;line-height:.98;margin:10px 0 8px;color:var(--ink)}
+.login .sub{color:var(--steel);margin-bottom:28px}
+.code-input{width:100%;padding:16px;font-family:'IBM Plex Mono',monospace;font-size:20px;letter-spacing:.18em;text-transform:uppercase;border:2px solid var(--ink);background:var(--card);border-radius:6px;color:var(--ink)}
+.enter-btn{width:100%;margin-top:12px;padding:16px;background:var(--red);color:#fff;border-radius:6px;font-family:'Staatliches',sans-serif;letter-spacing:.1em;text-transform:uppercase;font-size:18px}
+.enter-btn:active{transform:translateY(1px);background:var(--sauce)}
+.err{margin-top:10px;color:var(--red);font-weight:700}
+.hint{margin-top:26px;padding:14px;border:1px dashed var(--line);border-radius:6px;font-size:13px;color:var(--steel)}
+.hint code{font-family:'IBM Plex Mono',monospace;color:var(--ink);background:#F3EFD8;padding:1px 5px;border-radius:3px}
+.hdr{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:2px solid var(--ink)}
+.hdr-in{max-width:640px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.hdr .t{font-size:22px}
+.hdr .t .star{color:var(--red)}
+.sp{flex:1}
+.chip{font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:.08em;background:var(--red);color:#fff;padding:5px 12px;border-radius:99px;white-space:nowrap}
+.out{font-size:13px;color:var(--steel);text-decoration:underline}
+.back{font-weight:700;font-size:14px;padding:8px 0;color:var(--red)}
+.qb{margin:20px 0 8px;background:var(--ink);border-radius:10px;overflow:hidden;border-bottom:6px solid var(--red)}
+.qb-h{padding:12px 16px 8px;color:var(--cream);font-size:18px}
+.qb-h .star{color:var(--red)}
+.qb-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#2A2723;padding:1px}
+.qb-cell{background:var(--ink);padding:12px 14px;color:var(--cream)}
+.qb-v{color:var(--cream);font-size:23px;font-family:'Bebas Neue',sans-serif}
+.qb-k{color:#A9A398;font-size:11.5px;line-height:1.35;margin-top:2px}
+.sec{margin-top:28px}
+.sec-h{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}
+.sec-h .t{font-size:25px;color:var(--ink)}
+.draft-tag{font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--red);border:1.5px solid var(--red);padding:2px 7px;border-radius:4px;text-transform:uppercase}
+.card{width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:8px;padding:15px 16px;margin-bottom:10px;display:flex;gap:14px;align-items:center}
+.card:active{background:#FBF8E4}
+.card .n{font-family:'Bebas Neue',sans-serif;color:var(--steel);font-size:15px;min-width:26px}
+.card .tt{font-weight:700;font-size:16px}
+.card .ss{color:var(--steel);font-size:13px;margin-top:2px}
+.card .ar{margin-left:auto;color:var(--red);font-size:18px}
+.d-title{font-size:38px;line-height:1;margin:18px 0 4px}
+.d-sum{color:var(--steel);margin-bottom:20px}
+.blk-p{margin:12px 0}
+.blk-h{font-family:'Bebas Neue',sans-serif;letter-spacing:.09em;font-size:16px;color:var(--red);margin:22px 0 8px}
+.blk-warn{margin:14px 0;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.blk-warn .bar{height:8px;background:repeating-linear-gradient(90deg,var(--red) 0 5px,var(--ink) 5px 20px)}
+.blk-warn .tx{padding:12px 14px;font-weight:700}
+.blk-ban{margin:14px 0;background:var(--sauce);border-left:5px solid var(--red);border-radius:0 8px 8px 0;padding:12px 14px;font-weight:700;color:var(--cream)}
+ol.blk-steps{margin:12px 0;counter-reset:st}
+ol.blk-steps li{list-style:none;display:flex;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+ol.blk-steps li:last-child{border-bottom:none}
+ol.blk-steps li::before{counter-increment:st;content:counter(st,decimal-leading-zero);font-family:'Bebas Neue',sans-serif;color:var(--red);font-size:16px;padding-top:1px}
+ul.blk-list{margin:12px 0;padding-left:0}
+ul.blk-list li{list-style:none;padding:6px 0 6px 22px;position:relative}
+ul.blk-list li::before{content:"★";position:absolute;left:0;top:6px;color:var(--red);font-size:12px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.split .col{background:var(--card);border:1px solid var(--line);border-top:4px solid var(--ink);border-radius:8px;padding:12px}
+.split .ch{font-family:'Bebas Neue',sans-serif;letter-spacing:.06em;font-size:15px;margin-bottom:8px;color:var(--red)}
+.split li{list-style:none;font-size:14px;padding:3px 0;color:#3B372F}
+.media{margin:16px 0;border:2px dashed var(--steel);border-radius:8px;padding:22px 16px;text-align:center;color:var(--steel);background:rgba(255,255,255,.5)}
+.media .mk{font-family:'Bebas Neue',sans-serif;letter-spacing:.1em;font-size:14px;color:var(--red)}
+.media .ml{font-size:14px;margin-top:4px}
+.grid-err{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.gcard{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:13px 14px}
+.gcard .e{font-weight:700}
+.gcard .c{color:var(--red);font-size:13.5px;margin:3px 0}
+.gcard .s{font-size:14px}
+.gcard .s b{color:var(--teal)}
+.ck{margin:18px 0;background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ck-h{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);background:var(--ink);color:var(--cream)}
+.ck-h .t{font-family:'Bebas Neue',sans-serif;letter-spacing:.08em;font-size:16px;color:var(--cream)}
+.ck-h .pr{font-family:'Bebas Neue',sans-serif;font-size:15px;color:#A9A398}
+.ck-h .pr.done{color:var(--teal);font-weight:400}
+.ck-item{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;padding:12px 14px;border-bottom:1px solid var(--line)}
+.ck-item:last-child{border-bottom:none}
+.ck-box{width:22px;height:22px;min-width:22px;border:2px solid var(--ink);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;background:var(--card)}
+.ck-item.on .ck-box{background:var(--teal);border-color:var(--teal);color:#fff}
+.ck-item.on .lx{color:var(--steel);text-decoration:line-through}
+.note{margin:26px 0 0;padding:12px 14px;border:1px dashed var(--line);border-radius:8px;font-size:13px;color:var(--steel)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+/* ====== DATOS (editar aquí el contenido) ====== */
+const CODES={COCINA26:"cocina",JEFE26:"jefe_cocina",SALA26:"sala",JEFESALA26:"jefe_sala",OFICINA26:"oficina"};
+const PROFILES={
+  cocina:{label:"Equipo de Cocina",groups:["cocina"]},
+  jefe_cocina:{label:"Jefe de Cocina",groups:["cocina","sup_cocina"]},
+  sala:{label:"Equipo de Sala",groups:["sala"]},
+  jefe_sala:{label:"Encargado de Sala",groups:["sala","sup_sala"]},
+  oficina:{label:"Oficina",groups:["oficina"]}
+};
+const QUICK_COCINA=[
+  {v:"71 °C",k:"Temp. interior mínima hamburguesa"},
+  {v:"180 °C",k:"Temp. máxima aceite freidora"},
+  {v:"~140 °C",k:"Freidora en mantenimiento (sin actividad)"},
+  {v:"11:30",k:"Encendido de parrillas"},
+  {v:"20 min",k:"Precalentamiento freidoras antes del servicio"},
+  {v:"2-3×/día",k:"Eliminación líquidos de descongelación"},
+  {v:"2 × 90 g",k:"Muy hecha: formato dos carnes"},
+  {v:"Diario",k:"Filtrado del aceite"}
+];
+const QUICK_SALA=[
+  {v:"<30 s",k:"Saludo desde que entra el cliente"},
+  {v:"15 min",k:"Cortesía antes de marcar no-show"},
+  {v:"1 h 30",k:"Reserva estándar (Malasaña: 1 h 15)"},
+  {v:"1 h",k:"Antelación mínima para confirmar reservas"},
+  {v:"Cada 1 h",k:"Revisión de baños durante el servicio"},
+  {v:"≥20 €",k:"Pedido mínimo para sumar un gol del FC"},
+  {v:"2·4·6 %",k:"Cashback FC: Canterano · Titular · Pichichi"},
+  {v:"<5 min",k:"Mesa lista tras la marcha del cliente"}
+];
+const DATA=[
+ {group:"cocina",groupLabel:"Cocina",draft:false,items:[
+  {id:"inicio",title:"Inicio de jornada",summary:"Puntualidad, fichaje, uniformidad e higiene",blocks:[
+   {t:"warn",x:"La hora de entrada es la hora de estar LISTO para trabajar, no la hora de empezar a cambiarse."},
+   {t:"p",x:"Fichar únicamente una vez uniformado y preparado para producción. Prohibido fichar con ropa de calle. El fichaje de salida sí puede hacerse con ropa de calle, una vez completadas las tareas de cierre."},
+   {t:"h",x:"Uniformidad obligatoria"},
+   {t:"list",x:["Camiseta o uniforme oficial de Juancho's BBQ","Delantal de trabajo limpio","Gorra o protección capilar","Calzado antideslizante"]},
+   {t:"h",x:"Higiene personal"},
+   {t:"list",x:["Lavado de manos al entrar en cocina","Uñas cortas y limpias","Prohibido anillos, relojes y pulseras"]},
+   {t:"h",x:"Primera persona en cocina"},
+   {t:"p",x:"Es responsable de recibir al proveedor, verificar pedido contra albarán, comprobar temperaturas de refrigerados y congelados, colocar producto en cámara y realizar la limpieza inicial de la zona de cocinado."},
+   {t:"ban",x:"NUNCA aceptar mercancía con envase roto, mal estado, temperatura inadecuada o productos no solicitados."},
+   {t:"media",kind:"foto",label:"Ejemplo de uniformidad correcta"}
+  ]},
+  {id:"apertura",title:"Apertura de cocina",summary:"Parrillas, freidoras y control del aceite",blocks:[
+   {t:"p",x:"Parrillas encendidas aproximadamente a las 11:30 h. La panceta al cubata se cocina solo en horas de mañana y siempre en su parrilla específica — nunca en las parrillas principales de hamburguesas."},
+   {t:"p",x:"Freidoras: encender 20 minutos antes del servicio. Mantener alrededor de 140 °C sin actividad."},
+   {t:"ban",x:"NUNCA superar los 180 °C. Deteriora el aceite y la calidad del producto."},
+   {t:"h",x:"Cubas según volumen"},
+   {t:"split",a:{h:"LUN – JUE",x:["Solo cuba izquierda activa","Entrantes en freidora pequeña"]},b:{h:"VIE – DOM y festivos",x:["Ambas cubas operativas","Izquierda: patatas · Derecha: entrantes"]}},
+   {t:"h",x:"Filtrado diario del aceite"},
+   {t:"steps",x:["Apagar la freidora y dejar bajar la temperatura","Filtrar el aceite con colador adecuado","Retirar restos sólidos de la cuba","Devolver el aceite limpio a la freidora"]},
+   {t:"warn",x:"El cambio de aceite requiere aviso al supervisor y medición de polaridad. Nunca por iniciativa propia."},
+   {t:"media",kind:"video",label:"Filtrado de aceite paso a paso"}
+  ]},
+  {id:"produccion",title:"Producción y descongelación",summary:"Control de la carne antes de la parrilla",blocks:[
+   {t:"p",x:"La calidad de la hamburguesa empieza mucho antes de la parrilla: estado visual del producto, almacenamiento correcto en cámara, descongelación controlada y rotación adecuada."},
+   {t:"ban",x:"PROHIBIDO descongelar a temperatura ambiente, bajo agua caliente o acelerando el proceso."},
+   {t:"steps",x:["Colocar la carne en recipiente adecuado","Situarla sobre rejilla de goteo dentro del recipiente","Introducir el recipiente en refrigeración"]},
+   {t:"p",x:"La rejilla evita que la carne toque los líquidos que suelta. Eliminar esos líquidos 2-3 veces al día y devolver el recipiente a refrigeración."},
+   {t:"warn",x:"Ante cualquier duda sobre el estado del producto: avisar INMEDIATAMENTE al responsable de cocina."},
+   {t:"media",kind:"foto",label:"Recipiente con rejilla de goteo"}
+  ]},
+  {id:"coccion",title:"Cocción en parrilla",summary:"Puntos, sazonado, queso y seguridad",blocks:[
+   {t:"warn",x:"Temperatura interior mínima obligatoria: 71 °C. Nunca servir sin alcanzarla."},
+   {t:"ban",x:"TERMINANTEMENTE PROHIBIDO aplastar la hamburguesa durante el cocinado. Pierde jugos, textura y calidad."},
+   {t:"h",x:"Sazonado"},
+   {t:"steps",x:["Colocar la hamburguesa en zona de trabajo","Sal en ambas caras","A la parrilla inmediatamente (la sal justo antes, para no quitar humedad)"]},
+   {t:"h",x:"Queso"},
+   {t:"steps",x:["Cocinar la primera cara","Girar la hamburguesa","Colocar el queso inmediatamente","Tapar para fundir"]},
+   {t:"h",x:"Zonas de parrilla"},
+   {t:"split",a:{h:"◀ Izquierda",x:["Poco hecha"]},b:{h:"Centro / Derecha ▶",x:["Al punto · Punto+","Muy hecha"]}},
+   {t:"warn",x:"Muy hecha: siempre 2 carnes de 90 g para cocción homogénea. Atención: suelen pedirla personas embarazadas — cocción completa obligatoria."},
+   {t:"media",kind:"video",label:"Técnica de volteo y fundido de queso"}
+  ]},
+  {id:"puntas",title:"Parrilla en horas punta",summary:"Sistema de tandas y coordinación",blocks:[
+   {t:"p",x:"No sobrecargar la parrilla: provoca caída de temperatura, cocción irregular y retrasos. Prioridades del parrillero: punto de cada carne, orden de salida y parrilla organizada por zonas."},
+   {t:"h",x:"Tanda tipo"},
+   {t:"steps",x:["Entran 6 hamburguesas en parrilla","Control del primer lado de cocción","Giro de todas en orden","Queso","Cierre de tanda y entrega a montaje"]},
+   {t:"p",x:"Anticipar producción mirando la pantalla de pedidos, sin cocinar en exceso sin pedido. Comunicación constante con montaje: «Salen tres al punto en 30 segundos», «Marchando dos muy hechas»."}
+  ]},
+  {id:"montaje",title:"Montaje",summary:"Pan, ingredientes y coordinación con parrilla",blocks:[
+   {t:"p",x:"Montaje y parrilla funcionan como un solo equipo: cuando la carne sale de parrilla, pan e ingredientes deben estar ya listos."},
+   {t:"h",x:"Pan"},
+   {t:"p",x:"Golpe de calor de aproximadamente 1 minuto. Resultado: caliente, ligeramente tostado. No quemarlo — da sabor amargo."},
+   {t:"h",x:"Verduras y frescos"},
+   {t:"list",x:["Tomate, lechuga y cebolla lavados y desinfectados","En recipientes limpios, repuestos durante el servicio","Nunca usar verdura deteriorada"]},
+   {t:"media",kind:"foto",label:"Estación de montaje organizada"}
+  ]},
+  {id:"patatas",title:"Patatas y freidoras",summary:"Fritura, escurrido y sazonado",blocks:[
+   {t:"steps",x:["Cantidad adecuada en la cesta — no sobrecargar","Cesta al aceite caliente","Respetar el tiempo de fritura establecido","Retirar y escurrir bien","Salar INMEDIATAMENTE al salir"]},
+   {t:"warn",x:"En horas punta: tandas pequeñas continuas. Las patatas se sirven SIEMPRE recién hechas."}
+  ]},
+  {id:"pedidos",title:"Pedidos: sala, takeaway y delivery",summary:"Prioridad y verificación antes de cerrar",blocks:[
+   {t:"p",x:"Los pedidos salen siempre por orden de entrada en el sistema, salvo indicación del responsable de cocina."},
+   {t:"h",x:"Antes de cerrar un delivery"},
+   {t:"list",x:["Todos los productos incluidos","Salsas añadidas","Packaging correctamente cerrado"]},
+   {t:"warn",x:"Un error en delivery = reclamación o mala valoración. Comprobar siempre antes de cerrar."}
+  ]},
+  {id:"cierre",title:"Limpieza y cierre",summary:"Equipos, superficies y cámaras",blocks:[
+   {t:"list",x:["Parrilla: retirar restos y limpiar superficie","Freidoras: filtrar aceite, retirar sólidos, limpiar exterior","Superficies con desinfectante, secas y sin restos","Carne y verduras bien guardadas en refrigeración","Papeleras vaciadas y zona de basura limpia","Apagar los equipos que corresponda"]},
+   {t:"warn",x:"Si el aceite necesita cambio: avisar al supervisor para medición de polaridad."}
+  ]},
+  {id:"check-apertura",title:"Checklist de apertura",summary:"Revisión interactiva antes del servicio",blocks:[
+   {t:"check",title:"Personal",x:["Llegada puntual","Uniformidad completa y limpia","Fichaje una vez uniformados","Lavado de manos"]},
+   {t:"check",title:"Equipos",x:["Parrillas encendidas (~11:30)","Panceta en parrilla específica","Freidoras encendidas 20 min antes","Nivel de aceite correcto","Cubas según día de la semana"]},
+   {t:"check",title:"Producto",x:["Carne descongelada en refrigeración sobre rejilla","Líquidos de descongelación revisados","Stock suficiente para el servicio","Verduras lavadas y desinfectadas","Pan disponible"]}
+  ]},
+  {id:"check-cierre",title:"Checklist de cierre",summary:"Revisión interactiva al terminar",blocks:[
+   {t:"check",title:"Equipos",x:["Parrilla limpia y preparada","Aceite filtrado con colador","Restos sólidos retirados de cubas","Estado del aceite revisado"]},
+   {t:"check",title:"Zona y producto",x:["Mesas y zona de montaje limpias","Utensilios limpios","Carne guardada en refrigeración","Verduras tapadas"]},
+   {t:"check",title:"Final",x:["Papeleras vaciadas","Zona de basura limpia","Equipos apagados si corresponde"]}
+  ]},
+  {id:"errores",title:"Errores comunes",summary:"Los cinco fallos que más se repiten",blocks:[
+   {t:"grid",x:[
+    {e:"Aplastar la hamburguesa",c:"Pérdida de jugos y textura",s:"Nunca presionar la carne"},
+    {e:"Sobrecargar la parrilla",c:"Cocción irregular, retrasos",s:"Trabajar por tandas"},
+    {e:"Quemar el pan",c:"Sabor amargo",s:"Máximo ~1 minuto de calor"},
+    {e:"Freidoras sobrecargadas",c:"Patatas blandas",s:"Respetar capacidad de cesta"},
+    {e:"Montaje desorganizado",c:"Retrasos y caos",s:"Todo preparado ANTES del servicio"}
+   ]}
+  ]}
+ ]},
+ {group:"sup_cocina",groupLabel:"Supervisión de cocina",draft:false,items:[
+  {id:"sup-aceite",title:"Autorización de cambio de aceite",summary:"Medición de polaridad y criterio",blocks:[
+   {t:"p",x:"El aceite no se cambia nunca por iniciativa del personal. Al recibir el aviso del equipo:"},
+   {t:"steps",x:["Realizar medición de polaridad con el dispositivo correspondiente","Si supera los niveles recomendados: autorizar el cambio","Si no los supera: mantener aceite y reforzar el filtrado diario"]}
+  ]},
+  {id:"sup-calidad",title:"Control de calidad e incidencias",summary:"Producto, estándares y coordinación con sala",blocks:[
+   {t:"p",x:"Resolver de inmediato cualquier duda del equipo sobre el estado del producto. Verificar que cada hamburguesa cumple los estándares: carne al punto solicitado y ≥71 °C, queso fundido tras el giro, pan tostado sin quemar, verduras frescas y presentación con estructura."},
+   {t:"p",x:"Mantener comunicación fluida con sala cuando se acumulen pedidos, haya esperas elevadas o se produzca una incidencia en cocina."}
+  ]}
+ ]},
+ {group:"sala",groupLabel:"Sala",draft:false,items:[
+  {id:"sala-filosofia",title:"Filosofía y presencia",summary:"Puntualidad, imagen y conocimiento de carta",blocks:[
+   {t:"p",x:"La sala es donde el cliente vive la experiencia de marca. Amabilidad, rapidez y conocimiento del producto son los tres pilares. Un buen producto puede arruinarse con un mal servicio — y un error de cocina puede salvarse con una buena gestión en sala."},
+   {t:"warn",x:"La hora de entrada = hora de estar LISTO en sala, uniformado y preparado para recibir clientes."},
+   {t:"h",x:"Uniformidad e imagen"},
+   {t:"list",x:["Camiseta o uniforme oficial y delantal limpio","Calzado cómodo y antideslizante","Aspecto limpio, sin exceso de accesorios","Actitud positiva y energía desde el primer momento"]},
+   {t:"h",x:"Conocimiento del producto"},
+   {t:"p",x:"Conocer la carta en profundidad: ingredientes de cada plato, alérgenos, personalizaciones, bebidas, postres y promociones vigentes."},
+   {t:"warn",x:"Un camarero que no conoce la carta transmite inseguridad al cliente. Estudiar la carta es parte del trabajo."}
+  ]},
+  {id:"sala-journey",title:"Atención al cliente",summary:"De la bienvenida a la despedida",blocks:[
+   {t:"p",x:"Con reserva: acompañar a su mesa. Sin reserva: buscar mesa o informar de la hora más cercana disponible y ofrecer reservar en el momento. Siempre: explicar el funcionamiento y cómo acceder a la carta, dejando claro que estáis disponibles."},
+   {t:"warn",x:"El cliente debe sentirse visto desde el primer segundo. Ignorar a alguien que acaba de entrar es el primer error del servicio."},
+   {t:"h",x:"Secuencia de servicio"},
+   {t:"steps",x:["Tomar primero las bebidas, dando tiempo a elegir la comida","Servir bebidas y tomar el resto del pedido","Principal: preguntar el punto de cocción y recordar que la salsa de patatas está incluida","Ofrecer 2-3 entrantes (guacamole, tequeños, croquetas...)","Doble check tras servir: ¿está todo a su gusto?","Al recoger: ofrecer postres o cafés — si están llenos, existen los minipostres"]},
+   {t:"h",x:"Cobro y despedida"},
+   {t:"p",x:"Presentar la cuenta solo cuando la pidan, confirmar el importe, contar el cambio delante del cliente y entregar siempre el ticket. Pagos: Visa, Mastercard, American Express, Sodexo y efectivo."},
+   {t:"warn",x:"La despedida es tan importante como la bienvenida: misma educación y énfasis que al recibir."},
+   {t:"media",kind:"foto",label:"Bienvenida y acomodo en mesa"}
+  ]},
+  {id:"sala-quejas",title:"Gestión de quejas",summary:"Voltear la situación con amabilidad",blocks:[
+   {t:"steps",x:["Evaluar la queja preguntando para entender bien lo sucedido","Contrastar la información con cocina y el camarero asignado","Actuar según el caso: punto incorrecto → cocinar de nuevo · objeto ajeno al plato → disculpas, rehacer y prevenir · tiempo de reserva insuficiente por culpa nuestra → reubicar o retrasar la siguiente","Si no podéis resolverlo, contactar con el supervisor"]},
+   {t:"ban",x:"NUNCA discutir con el cliente ante una queja: escalada asegurada y mala valoración."},
+   {t:"warn",x:"El objetivo siempre es reducir al máximo la frustración del cliente, hablando con amabilidad y educación."}
+  ]},
+  {id:"sala-tpv",title:"Pedidos y TPV (Revo)",summary:"Introducción, modificaciones y alérgenos",blocks:[
+   {t:"steps",x:["Introducir el pedido inmediatamente después de tomarlo","Verificar que modificaciones y alergias están reflejadas","Confirmar el número de mesa","Revisar el pedido en pantalla antes de confirmarlo"]},
+   {t:"warn",x:"Un pedido mal introducido genera retrasos, confusión en cocina y mala experiencia para el cliente."},
+   {t:"h",x:"Modificaciones y alérgenos"},
+   {t:"list",x:["Toda modificación va al sistema — nunca solo de palabra","Si el sistema no la permite: avisar directamente a cocina y al responsable","Los alérgenos quedan siempre registrados por escrito","Ninguna anulación ni descuento sin autorización del responsable"]},
+   {t:"warn",x:"Ante cualquier discrepancia en el cobro, avisar al responsable. No resolver errores de caja por cuenta propia."}
+  ]},
+  {id:"sala-cocina",title:"Coordinación con cocina",summary:"Un mismo equipo, comunicación fluida",blocks:[
+   {t:"p",x:"El sistema de pedidos es el canal principal. Para urgencias o cambios de última hora, comunicación directa con el responsable de cocina, evitando interrupciones en los picos de servicio."},
+   {t:"h",x:"Sala transmite a cocina"},
+   {t:"list",x:["Comensales por mesa y posibles alergias","Modificaciones en pedidos ya enviados","Peticiones especiales de última hora","Aviso cuando una mesa va a pedir postre o segundo"]},
+   {t:"h",x:"Sala recibe de cocina"},
+   {t:"list",x:["Productos agotados o no disponibles","Tiempos estimados cuando el servicio está cargado","Aviso de salida de pedidos para recogerlos al momento"]},
+   {t:"warn",x:"Los platos no salen de cocina si el camarero no está listo para llevarlos. Un plato esperando en barra se enfría y pierde calidad."},
+   {t:"p",x:"Coordinar que todos los platos de una mesa salgan a la vez, y consultar el estado a cocina antes de que el cliente pregunte por una espera larga."}
+  ]},
+  {id:"sala-delivery",title:"Delivery y takeaway",summary:"El cliente no está delante: revisar todo",blocks:[
+   {t:"p",x:"Revisar las plataformas activas al inicio de cada turno y gestionar los pedidos por orden de llegada, igual que en sala."},
+   {t:"warn",x:"Pausar las plataformas cuando el volumen no permita mantener los tiempos. Mejor pausar que acumular retrasos y malas valoraciones."},
+   {t:"h",x:"Antes de cerrar un pedido"},
+   {t:"steps",x:["Todos los productos incluidos","Salsas y complementos añadidos","Packaging correctamente cerrado y sellado","En caso de duda, revisar dirección o nombre del cliente"]},
+   {t:"ban",x:"Un error en delivery no se puede corregir una vez sale el repartidor. Revisar SIEMPRE antes de cerrar."},
+   {t:"p",x:"Takeaway: saludar con la misma atención que en sala, confirmar el nombre del pedido, informar de retrasos y entregar completo y cerrado. Reclamaciones: escuchar y disculparse, registrar el error, avisar al responsable y aplicar el protocolo de compensación."}
+  ]},
+  {id:"sala-reservas",title:"Reservas — TheFork Manager",summary:"Mapa de sala, no-shows y esperas",blocks:[
+   {t:"p",x:"TheFork Manager (pestaña superior del navegador) permite ver, crear y modificar reservas y gestionar el mapa de sala en tiempo real. El mapa se observa continuamente: sois vosotros quienes ubicáis a los clientes en la mesa que más convenga al restaurante, no al revés."},
+   {t:"h",x:"No-shows y retrasos"},
+   {t:"steps",x:["Si la reserva no llega: 15 minutos de cortesía y llamar al cliente","Si no contestan: cancelar, liberar la mesa y marcar como no-show (rojo)","Si contestan: informar con educación del tiempo disponible hasta el final de su reserva"]},
+   {t:"h",x:"Crear y cancelar"},
+   {t:"p",x:"Crear: seleccionar mesa(s) y pedir hora, comensales, nombre y apellidos, teléfono y email. Cancelar solo si lo pide el cliente, está duplicada por error confirmado o lo pide Dirección — siempre indicando el motivo."},
+   {t:"h",x:"Walk-ins y esperas"},
+   {t:"p",x:"En walk-in, priorizar mesas con reserva que empiece cuando terminaría el walk-in (1 h 30 desde su llegada) y las visibles desde la calle. Sin mesa: informar del tiempo estimado con honestidad (mejor pasarse que quedarse corto), ofrecer barra o zona de espera, actualizar si se alarga y acompañar en cuanto haya mesa."},
+   {t:"p",x:"Duración estándar de la reserva: 1 h 30 (1 h 15 en Malasaña). Avisar al cliente cuando se acerque el final para que pida postre o café sin agobios. Si el retraso fue del restaurante, reubicar o retrasar la siguiente reserva."},
+   {t:"warn",x:"Si TheFork se congela o va lento: foto a las reservas para no perder la información y avisar al supervisor. Suele volver solo a la normalidad."}
+  ]},
+  {id:"sala-limpieza",title:"Limpieza continua de sala",summary:"No es tarea de cierre: es todo el servicio",blocks:[
+   {t:"list",x:["Limpiar y reponer cada mesa en cuanto el cliente la abandone","Barra y zonas de paso despejadas y limpias","Retirar vasos, platos y utensilios sucios de forma continua","Baños cada hora: papel, jabón, ambientador y papelera con bolsa","Suelos y manchas: en el momento, no solo al cierre","Reponer servilletas, salsas y complementos durante el servicio","Retirar cartas deterioradas y avisar si el stock de vajilla va bajo"]},
+   {t:"warn",x:"Una mesa sucia visible para otros clientes transmite dejadez. La limpieza entre clientes es tan importante como el propio servicio."}
+  ]},
+  {id:"sala-fc",title:"Juanchonistas FC",summary:"Fidelización: preguntar en cada mesa",blocks:[
+   {t:"p",x:"Programa de fidelización por cashback. Registro en juanchosbbq.com/juanchonistas. Cada pedido de 20 € o más suma un GOL (los pedidos de Uber Eats no suman). Por registrarse: bebida gratis, regalo de cumpleaños y promociones exclusivas."},
+   {t:"split",a:{h:"Niveles",x:["Canterano (hasta 6 goles): 2%","Titular (7-12 goles): 4%","Pichichi (13+ goles): 6%"]},b:{h:"Vuestra obligación",x:["Preguntar en cada mesa si son del FC","Si no: explicar beneficios y registro","Si sí: dar el gol y canjear su cashback"]}},
+   {t:"warn",x:"Es obligación del equipo de sala preguntar SIEMPRE al cliente si es del Juanchonistas FC, en cada visita."},
+   {t:"h",x:"Cobro con cashback en Revo"},
+   {t:"steps",x:["En formas de pago, seleccionar 'Cheerfy Cashback'","Pulsar 'Allow' (si aparece un error, cerrarlo con la X)","Escanear el QR de la tarjeta con la trasera de la tablet, o pedir el teléfono de registro","Salvo que indique una cantidad concreta, asumir que gasta todo lo acumulado"]},
+   {t:"h",x:"Incidencias frecuentes"},
+   {t:"list",x:["No tiene la tarjeta: se descarga desde el correo de registro (Wallet en iPhone, favorito en Android o web)","El teléfono no aparece: se registró con otro o nunca — ofrecerle registrarse","Goles o cashback que no cuadran (u otras incidencias): el cliente escribe a juancho@equipojuanchos.com y se avisa al supervisor con los detalles"]}
+  ]},
+  {id:"sala-estandares",title:"Estándares de sala",summary:"Lo que debe cumplir cada servicio",blocks:[
+   {t:"list",x:["Bienvenida: saludo en menos de 30 segundos, acompañamiento, carta entregada y bebida ofrecida","Pedido: alérgenos preguntados, punto confirmado, pedido repetido antes de introducir","Servicio: atención sin invadir, vasos repuestos antes de vaciarse, platos retirados con agilidad","Entrega: todos los platos de la mesa a la vez, correctos y a temperatura","Cierre: cuenta sin demora, despedida amable, mesa lista en menos de 5 minutos","Delivery: revisado, packaging sellado y tiempos respetados"]}
+  ]},
+  {id:"sala-check-cierre",title:"Checklist de cierre",summary:"Revisión interactiva al terminar",blocks:[
+   {t:"check",title:"Cierre del servicio",x:["Todas las mesas cerradas y cobradas","Arqueo realizado y comunicado al supervisor","Incidencias del turno comunicadas"]},
+   {t:"check",title:"Limpieza",x:["Mesas y sillas limpias y ordenadas","Suelos barridos y fregados","Barra y superficies limpias","Baños limpios y con material repuesto"]},
+   {t:"check",title:"Sistemas y final",x:["Plataformas de delivery pausadas o cerradas","TPV apagado correctamente","Sin pedidos pendientes","Servilletas, salsas y cartas repuestas","Puertas y ventanas cerradas","Luces y equipos apagados si corresponde"]}
+  ]},
+  {id:"sala-errores",title:"Errores comunes",summary:"Los siete fallos que más se repiten",blocks:[
+   {t:"grid",x:[
+    {e:"No saludar al entrar",c:"El cliente se siente ignorado desde el inicio",s:"Contacto visual y saludo inmediato"},
+    {e:"Pedido mal introducido en TPV",c:"Error en cocina, retraso, cliente insatisfecho",s:"Revisar siempre antes de confirmar"},
+    {e:"No informar de esperas",c:"Cliente frustrado sin información",s:"Comunicar tiempos reales antes de que pregunte"},
+    {e:"Platos esperando en barra",c:"Comida fría, mala calidad",s:"Estar pendiente y recoger al momento"},
+    {e:"Delivery cerrado sin revisar",c:"Error sin posibilidad de corrección",s:"Revisar siempre antes de cerrar"},
+    {e:"Mesa sucia visible",c:"Imagen descuidada del local",s:"Limpiar en cuanto se marche el cliente"},
+    {e:"Discutir ante una queja",c:"Escalada y mala valoración",s:"Escuchar, disculparse y buscar solución"}
+   ]}
+  ]}
+ ]},
+ {group:"sup_sala",groupLabel:"Encargado de turno",draft:false,items:[
+  {id:"enc-apertura",title:"Apertura de sala",summary:"Reservas, caja, plataformas y puesta a punto",blocks:[
+   {t:"warn",x:"La apertura de sala es responsabilidad del encargado de turno. El checklist de apertura es obligatorio, completado y firmado — si no lo está al inicio del turno, el encargado será avisado."},
+   {t:"h",x:"TheFork: confirmación de reservas (primera tarea)"},
+   {t:"list",x:["Llamar con mínimo 1 h de antelación, siempre desde el teléfono del local","Rosa y amarillo: llamar a todas sin excepción · Naranja: solo grupos de 6+ o indicación especial","Confirmar nombre, hora, personas y peticiones; anotar todo en comentarios (alergias, sillas de bebé...)","Revisar anotaciones de Dirección y etiquetas del cliente (VIP, Periodista, Familiar...)","Si no contestan: comentario de 'no contesta' — una reserva no confirmada NO es una cancelada","Al editar, desmarcar 'enviar email al cliente' (es solo informativo interno)","Organizar combinaciones de mesas por horas para maximizar la capacidad"]},
+   {t:"h",x:"Apertura de caja"},
+   {t:"steps",x:["Contar el efectivo total incluido el fondo: debe ser 200 € más los sobres de días anteriores","Cualquier varianza respecto al cierre anterior: reportar al supervisor ANTES de abrir","En Revo: R (arriba a la izquierda) → Control de caja → Abrir turno → introducir la cantidad contada"]},
+   {t:"warn",x:"Desde la apertura de turno, la caja es responsabilidad del encargado que la ha abierto."},
+   {t:"h",x:"Plataformas y puesta a punto"},
+   {t:"list",x:["Abrir Uber y Cheerfy, confirmar stock con cocina y revisar promociones activas","Barra organizada: solo lo necesario visible, cristalería y cafetera limpias","Cámaras: caducidades revisadas y stock de refrescos y cerveza suficiente","Limpieza de fuera a dentro: cubos recogidos, cristales, suelo, mesas, espejos y lámparas","Mesas montadas con cubertería y QRs en buen estado","Música: playlist de Juancho's en Spotify (especiales en Navidad, San Valentín, San Isidro...) a volumen que permita conversar","Iluminación de leds y lámparas; exterior obligatoria de noche","Briefing de equipo: reservas, sin-stocks, zonas asignadas y revisión de uniformidad"]}
+  ]},
+  {id:"enc-check-apertura",title:"Checklist de apertura (obligatorio)",summary:"Completar y firmar antes de abrir",blocks:[
+   {t:"check",title:"Apertura del encargado",x:["TheFork: llamadas hechas, comentarios y etiquetas revisados, mesas combinadas","Caja: cierre anterior revisado, fondo contado, turno abierto en Revo","Uber / Cheerfy abiertas, stock confirmado con cocina, promos revisadas","Barra organizada, cubertería, cristalería y cafetera limpias","Caducidades revisadas: ningún producto fuera de fecha","Stock de refrescos y cerveza suficiente para el turno","Limpieza: cristales, suelo, mesas, espejos y lámparas","Mesas montadas, QRs en buen estado, servilletas y salsas repuestas","Baños: papel, jabón, ambientador, papelera de pedal con bolsa","Playlist de Juancho's activa a volumen adecuado","Iluminación interior operativa y exterior preparada","Uniformidad completa y limpia de todo el equipo","Incidencias estructurales, de electrodomésticos o sistemas revisadas"]}
+  ]},
+  {id:"enc-cierre-caja",title:"Cierre de caja",summary:"Arqueo, Reporte Z y sobres",blocks:[
+   {t:"p",x:"Realizarlo solo con TODAS las mesas cerradas y TODOS los pedidos de delivery (Uber y Cheerfy) gestionados."},
+   {t:"steps",x:["Contar el efectivo total: la base se queda en 200 € — el resto va a un sobre con fecha, cantidad y local escritos en el frontal, grapado solo por el lateral superior","Cerrar sesión de los datáfonos: se imprime el cierre automáticamente — revisar el total de la remesa","Imprimir el Reporte Z: R → Control de caja → Reporte Z → icono impresora","Cotejar: las diferencias de efectivo y tarjeta deben ser 0 — si no, reportar al supervisor antes de cerrar","Cierre de turno en Revo: R → Control de caja → Cierre de turno → introducir las cantidades cotejadas manualmente → Tick","Grapar el cierre de caja con los de datáfono, guardar en el cajón, foto y enviar al grupo de cierres de caja"]},
+   {t:"ban",x:"Las cantidades introducidas son SIEMPRE las contabilizadas manualmente por el encargado. NUNCA las que dé el sistema."},
+   {t:"h",x:"Entradas y salidas de caja"},
+   {t:"p",x:"Cualquier movimiento (compras de aceite, compras autorizadas por dirección...): R → Control de caja → Entradas/Salidas → tipo, motivo y cantidad. En las salidas, adjuntar siempre la factura del establecimiento."}
+  ]}
+ ]},
+ {group:"oficina",groupLabel:"Oficina",draft:true,items:[
+  {id:"oficina-wip",title:"Procedimientos de oficina",summary:"En preparación",blocks:[
+   {t:"p",x:"Esta sección se incorporará en una fase posterior."}
+  ]}
+ ]}
+];
+
+/* ====== RENDER ====== */
+const app=document.getElementById("app");
+let profile=null;
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+
+function renderLogin(){
+  app.innerHTML=`
+  <div class="login">
+    <div class="tape"></div>
+    <div class="login-body">
+      <div class="brand">★ JUANCHO'S BBQ · PASIÓN A LA PARRILLA</div>
+      <h1 class="display">Procedimientos<br>de equipo</h1>
+      <p class="sub">Introduce el código de tu puesto para ver tus procedimientos.</p>
+      <input class="code-input" id="code" placeholder="CÓDIGO" autocomplete="off" aria-label="Código de acceso">
+      <div class="err" id="err" style="display:none">Código no válido. Revisa con tu responsable.</div>
+      <button class="enter-btn" id="go">Entrar</button>
+      <div class="hint"><b>Códigos de demostración:</b> <code>COCINA26</code> · <code>JEFE26</code> · <code>SALA26</code> · <code>JEFESALA26</code> · <code>OFICINA26</code><br>En producción, la validación se hará en servidor y los códigos serán rotables.</div>
+    </div>
+    <div class="tape"></div>
+  </div>`;
+  const input=document.getElementById("code");
+  const go=()=>{
+    const p=CODES[input.value.trim().toUpperCase()];
+    if(p){profile=p;renderHome();window.scrollTo(0,0);}
+    else document.getElementById("err").style.display="block";
+  };
+  document.getElementById("go").onclick=go;
+  input.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+  input.addEventListener("input",()=>document.getElementById("err").style.display="none");
+}
+
+function header(backLabel){
+  return `<div class="hdr"><div class="hdr-in">
+    ${backLabel?`<button class="back" id="back">← ${esc(backLabel)}</button>`:`<span class="t display"><span class="star">★</span> Juancho's</span>`}
+    <span class="sp"></span>
+    <span class="chip">${esc(PROFILES[profile].label)}</span>
+    ${backLabel?"":`<button class="out" id="out">Salir</button>`}
+  </div></div>`;
+}
+
+function renderHome(){
+  const groups=DATA.filter(g=>PROFILES[profile].groups.includes(g.group));
+  const qd=PROFILES[profile].groups.includes("cocina")?QUICK_COCINA:(PROFILES[profile].groups.includes("sala")?QUICK_SALA:null);
+  let html=header(null)+`<div class="wrap">`;
+  if(qd){
+    html+=`<div class="qb"><div class="qb-h display"><span class="star">★</span> Datos críticos</div><div class="qb-grid">`+
+      qd.map(q=>`<div class="qb-cell"><div class="qb-v mono">${esc(q.v)}</div><div class="qb-k">${esc(q.k)}</div></div>`).join("")+
+      `</div></div>`;
+  }
+  groups.forEach(g=>{
+    html+=`<div class="sec"><div class="sec-h"><span class="t display">${esc(g.groupLabel)}</span>${g.draft?`<span class="draft-tag">Borrador</span>`:""}</div>`;
+    g.items.forEach((it,i)=>{
+      html+=`<button class="card" data-g="${g.group}" data-i="${it.id}">
+        <span class="n">${String(i+1).padStart(2,"0")}</span>
+        <span><div class="tt">${esc(it.title)}</div><div class="ss">${esc(it.summary)}</div></span>
+        <span class="ar">→</span></button>`;
+    });
+    html+=`</div>`;
+  });
+  html+=`<div class="note">Prototipo v0.4 · Contenido real de cocina y sala · Identidad Brand Kit 2025. Los huecos «Foto / Vídeo pendiente» marcan dónde irá el material audiovisual.</div></div>`;
+  app.innerHTML=html;
+  document.getElementById("out").onclick=()=>{profile=null;renderLogin();window.scrollTo(0,0);};
+  app.querySelectorAll(".card").forEach(c=>{
+    c.onclick=()=>{
+      const g=DATA.find(x=>x.group===c.dataset.g);
+      const it=g.items.find(x=>x.id===c.dataset.i);
+      renderDetail(g,it);window.scrollTo(0,0);
+    };
+  });
+}
+
+function blockHtml(b){
+  switch(b.t){
+    case "p":return `<p class="blk-p">${esc(b.x)}</p>`;
+    case "h":return `<div class="blk-h">${esc(b.x)}</div>`;
+    case "warn":return `<div class="blk-warn"><div class="bar"></div><div class="tx">${esc(b.x)}</div></div>`;
+    case "ban":return `<div class="blk-ban">${esc(b.x)}</div>`;
+    case "steps":return `<ol class="blk-steps">${b.x.map(s=>`<li><span>${esc(s)}</span></li>`).join("")}</ol>`;
+    case "list":return `<ul class="blk-list">${b.x.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>`;
+    case "split":return `<div class="split">
+      <div class="col"><div class="ch">${esc(b.a.h)}</div><ul>${b.a.x.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>
+      <div class="col"><div class="ch">${esc(b.b.h)}</div><ul>${b.b.x.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div></div>`;
+    case "media":return `<div class="media"><div class="mk">${b.kind==="video"?"▶ Vídeo":"📷 Foto"} — pendiente</div><div class="ml">${esc(b.label)}</div></div>`;
+    case "grid":return `<div class="grid-err">${b.x.map(g=>`<div class="gcard"><div class="e">${esc(g.e)}</div><div class="c">${esc(g.c)}</div><div class="s"><b>→</b> ${esc(g.s)}</div></div>`).join("")}</div>`;
+    case "check":return `<div class="ck" data-ck><div class="ck-h"><span class="t">${esc(b.title)}</span><span class="pr">0/${b.x.length}</span></div>`+
+      b.x.map(it=>`<button class="ck-item"><span class="ck-box"></span><span class="lx">${esc(it)}</span></button>`).join("")+`</div>`;
+    default:return "";
+  }
+}
+
+function renderDetail(g,it){
+  let html=header(g.groupLabel)+`<div class="wrap">
+    <h1 class="d-title display">${esc(it.title)}</h1>
+    <p class="d-sum">${esc(it.summary)}</p>`+
+    it.blocks.map(blockHtml).join("")+`</div>`;
+  app.innerHTML=html;
+  document.getElementById("back").onclick=()=>{renderHome();window.scrollTo(0,0);};
+  app.querySelectorAll("[data-ck]").forEach(ck=>{
+    const items=ck.querySelectorAll(".ck-item");
+    const pr=ck.querySelector(".pr");
+    items.forEach(item=>{
+      item.onclick=()=>{
+        item.classList.toggle("on");
+        item.querySelector(".ck-box").textContent=item.classList.contains("on")?"✓":"";
+        const done=ck.querySelectorAll(".ck-item.on").length;
+        pr.textContent=done+"/"+items.length;
+        pr.classList.toggle("done",done===items.length);
+      };
+    });
+  });
+}
+
+renderLogin();
+</script>
+</body>
+</html>

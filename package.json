@@ -1,0 +1,11 @@
+{
+  "name": "procedimientos-juanchos",
+  "version": "0.4.0",
+  "private": true,
+  "scripts": {
+    "start": "serve -s . -l tcp://0.0.0.0:${PORT:-3000}"
+  },
+  "dependencies": {
+    "serve": "^14.2.3"
+  }
+}
