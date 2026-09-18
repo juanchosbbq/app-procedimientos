@@ -106,10 +106,10 @@ ul.blk-list li::before{content:"★";position:absolute;left:0;top:6px;color:var(
 /* ====== DATOS (editar aquí el contenido) ====== */
 const CODES={COCINA26:"cocina",JEFE26:"jefe_cocina",SALA26:"sala",JEFESALA26:"jefe_sala",OFICINA26:"oficina"};
 const PROFILES={
-  cocina:{label:"Equipo de Cocina",groups:["cocina"]},
-  jefe_cocina:{label:"Jefe de Cocina",groups:["cocina","sup_cocina"]},
-  sala:{label:"Equipo de Sala",groups:["sala"]},
-  jefe_sala:{label:"Encargado de Sala",groups:["sala","sup_sala"]},
+  cocina:{label:"Equipo de Cocina",groups:["cocina","burgers"]},
+  jefe_cocina:{label:"Jefe de Cocina",groups:["cocina","sup_cocina","burgers"]},
+  sala:{label:"Equipo de Sala",groups:["sala","burgers"]},
+  jefe_sala:{label:"Encargado de Sala",groups:["sala","sup_sala","burgers"]},
   oficina:{label:"Oficina",groups:["oficina"]}
 };
 const QUICK_COCINA=[
@@ -175,7 +175,8 @@ const DATA=[
    {t:"h",x:"Zonas de parrilla"},
    {t:"split",a:{h:"◀ Izquierda",x:["Poco hecha"]},b:{h:"Centro / Derecha ▶",x:["Al punto · Punto+","Muy hecha"]}},
    {t:"warn",x:"Muy hecha: siempre 2 carnes de 90 g para cocción homogénea. Atención: suelen pedirla personas embarazadas — cocción completa obligatoria."},
-   {t:"media",kind:"video",label:"Técnica de volteo y fundido de queso"}
+   {t:"media",kind:"video",label:"Técnica de volteo y fundido de queso"},
+   {t:"media",kind:"foto",label:"Parrilla dividida por puntos de cocción"}
   ]},
   {id:"puntas",title:"Parrilla en horas punta",summary:"Sistema de tandas y coordinación",blocks:[
    {t:"p",x:"No sobrecargar la parrilla: provoca caída de temperatura, cocción irregular y retrasos. Prioridades del parrillero: punto de cada carne, orden de salida y parrilla organizada por zonas."},
@@ -208,7 +209,8 @@ const DATA=[
   {id:"check-apertura",title:"Checklist de apertura",summary:"Revisión interactiva antes del servicio",blocks:[
    {t:"check",title:"Personal",x:["Llegada puntual","Uniformidad completa y limpia","Fichaje una vez uniformados","Lavado de manos"]},
    {t:"check",title:"Equipos",x:["Parrillas encendidas (~11:30)","Panceta en parrilla específica","Freidoras encendidas 20 min antes","Nivel de aceite correcto","Cubas según día de la semana"]},
-   {t:"check",title:"Producto",x:["Carne descongelada en refrigeración sobre rejilla","Líquidos de descongelación revisados","Stock suficiente para el servicio","Verduras lavadas y desinfectadas","Pan disponible"]}
+   {t:"check",title:"Producto",x:["Carne descongelada en refrigeración sobre rejilla","Líquidos de descongelación revisados","Stock suficiente para el servicio","Verduras lavadas y desinfectadas","Pan disponible"]},
+   {t:"media",kind:"foto",label:"Cocina lista antes del servicio"}
   ]},
   {id:"check-cierre",title:"Checklist de cierre",summary:"Revisión interactiva al terminar",blocks:[
    {t:"check",title:"Equipos",x:["Parrilla limpia y preparada","Aceite filtrado con colador","Restos sólidos retirados de cubas","Estado del aceite revisado"]},
@@ -265,7 +267,8 @@ const DATA=[
    {t:"warn",x:"Un pedido mal introducido genera retrasos, confusión en cocina y mala experiencia para el cliente."},
    {t:"h",x:"Modificaciones y alérgenos"},
    {t:"list",x:["Toda modificación va al sistema — nunca solo de palabra","Si el sistema no la permite: avisar directamente a cocina y al responsable","Los alérgenos quedan siempre registrados por escrito","Ninguna anulación ni descuento sin autorización del responsable"]},
-   {t:"warn",x:"Ante cualquier discrepancia en el cobro, avisar al responsable. No resolver errores de caja por cuenta propia."}
+   {t:"warn",x:"Ante cualquier discrepancia en el cobro, avisar al responsable. No resolver errores de caja por cuenta propia."},
+   {t:"media",kind:"video",label:"Introducir un pedido con modificación y alérgeno en Revo"}
   ]},
   {id:"sala-cocina",title:"Coordinación con cocina",summary:"Un mismo equipo, comunicación fluida",blocks:[
    {t:"p",x:"El sistema de pedidos es el canal principal. Para urgencias o cambios de última hora, comunicación directa con el responsable de cocina, evitando interrupciones en los picos de servicio."},
@@ -293,7 +296,8 @@ const DATA=[
    {t:"h",x:"Walk-ins y esperas"},
    {t:"p",x:"En walk-in, priorizar mesas con reserva que empiece cuando terminaría el walk-in (1 h 30 desde su llegada) y las visibles desde la calle. Sin mesa: informar del tiempo estimado con honestidad (mejor pasarse que quedarse corto), ofrecer barra o zona de espera, actualizar si se alarga y acompañar en cuanto haya mesa."},
    {t:"p",x:"Duración estándar de la reserva: 1 h 30 (1 h 15 en Malasaña). Avisar al cliente cuando se acerque el final para que pida postre o café sin agobios. Si el retraso fue del restaurante, reubicar o retrasar la siguiente reserva."},
-   {t:"warn",x:"Si TheFork se congela o va lento: foto a las reservas para no perder la información y avisar al supervisor. Suele volver solo a la normalidad."}
+   {t:"warn",x:"Si TheFork se congela o va lento: foto a las reservas para no perder la información y avisar al supervisor. Suele volver solo a la normalidad."},
+   {t:"media",kind:"foto",label:"Mapa de sala en TheFork Manager"}
   ]},
   {id:"sala-limpieza",title:"Limpieza continua de sala",summary:"No es tarea de cierre: es todo el servicio",blocks:[
    {t:"list",x:["Limpiar y reponer cada mesa en cuanto el cliente la abandone","Barra y zonas de paso despejadas y limpias","Retirar vasos, platos y utensilios sucios de forma continua","Baños cada hora: papel, jabón, ambientador y papelera con bolsa","Suelos y manchas: en el momento, no solo al cierre","Reponer servilletas, salsas y complementos durante el servicio","Retirar cartas deterioradas y avisar si el stock de vajilla va bajo"]},
@@ -306,7 +310,8 @@ const DATA=[
    {t:"h",x:"Cobro con cashback en Revo"},
    {t:"steps",x:["En formas de pago, seleccionar 'Cheerfy Cashback'","Pulsar 'Allow' (si aparece un error, cerrarlo con la X)","Escanear el QR de la tarjeta con la trasera de la tablet, o pedir el teléfono de registro","Salvo que indique una cantidad concreta, asumir que gasta todo lo acumulado"]},
    {t:"h",x:"Incidencias frecuentes"},
-   {t:"list",x:["No tiene la tarjeta: se descarga desde el correo de registro (Wallet en iPhone, favorito en Android o web)","El teléfono no aparece: se registró con otro o nunca — ofrecerle registrarse","Goles o cashback que no cuadran (u otras incidencias): el cliente escribe a juancho@equipojuanchos.com y se avisa al supervisor con los detalles"]}
+   {t:"list",x:["No tiene la tarjeta: se descarga desde el correo de registro (Wallet en iPhone, favorito en Android o web)","El teléfono no aparece: se registró con otro o nunca — ofrecerle registrarse","Goles o cashback que no cuadran (u otras incidencias): el cliente escribe a juancho@equipojuanchos.com y se avisa al supervisor con los detalles"]},
+   {t:"media",kind:"video",label:"Cobro con Cheerfy Cashback en Revo paso a paso"}
   ]},
   {id:"sala-estandares",title:"Estándares de sala",summary:"Lo que debe cumplir cada servicio",blocks:[
    {t:"list",x:["Bienvenida: saludo en menos de 30 segundos, acompañamiento, carta entregada y bebida ofrecida","Pedido: alérgenos preguntados, punto confirmado, pedido repetido antes de introducir","Servicio: atención sin invadir, vasos repuestos antes de vaciarse, platos retirados con agilidad","Entrega: todos los platos de la mesa a la vez, correctos y a temperatura","Cierre: cuenta sin demora, despedida amable, mesa lista en menos de 5 minutos","Delivery: revisado, packaging sellado y tiempos respetados"]}
@@ -336,8 +341,10 @@ const DATA=[
    {t:"h",x:"Apertura de caja"},
    {t:"steps",x:["Contar el efectivo total incluido el fondo: debe ser 200 € más los sobres de días anteriores","Cualquier varianza respecto al cierre anterior: reportar al supervisor ANTES de abrir","En Revo: R (arriba a la izquierda) → Control de caja → Abrir turno → introducir la cantidad contada"]},
    {t:"warn",x:"Desde la apertura de turno, la caja es responsabilidad del encargado que la ha abierto."},
+   {t:"media",kind:"foto",label:"Pantalla de Revo en 'Abrir turno'"},
    {t:"h",x:"Plataformas y puesta a punto"},
-   {t:"list",x:["Abrir Uber y Cheerfy, confirmar stock con cocina y revisar promociones activas","Barra organizada: solo lo necesario visible, cristalería y cafetera limpias","Cámaras: caducidades revisadas y stock de refrescos y cerveza suficiente","Limpieza de fuera a dentro: cubos recogidos, cristales, suelo, mesas, espejos y lámparas","Mesas montadas con cubertería y QRs en buen estado","Música: playlist de Juancho's en Spotify (especiales en Navidad, San Valentín, San Isidro...) a volumen que permita conversar","Iluminación de leds y lámparas; exterior obligatoria de noche","Briefing de equipo: reservas, sin-stocks, zonas asignadas y revisión de uniformidad"]}
+   {t:"list",x:["Abrir Uber y Cheerfy, confirmar stock con cocina y revisar promociones activas","Barra organizada: solo lo necesario visible, cristalería y cafetera limpias","Cámaras: caducidades revisadas y stock de refrescos y cerveza suficiente","Limpieza de fuera a dentro: cubos recogidos, cristales, suelo, mesas, espejos y lámparas","Mesas montadas con cubertería y QRs en buen estado","Música: playlist de Juancho's en Spotify (especiales en Navidad, San Valentín, San Isidro...) a volumen que permita conversar","Iluminación de leds y lámparas; exterior obligatoria de noche","Briefing de equipo: reservas, sin-stocks, zonas asignadas y revisión de uniformidad"]},
+   {t:"media",kind:"foto",label:"Setup de mesa correcto (cubertería, QR, servilletas)"}
   ]},
   {id:"enc-check-apertura",title:"Checklist de apertura (obligatorio)",summary:"Completar y firmar antes de abrir",blocks:[
    {t:"check",title:"Apertura del encargado",x:["TheFork: llamadas hechas, comentarios y etiquetas revisados, mesas combinadas","Caja: cierre anterior revisado, fondo contado, turno abierto en Revo","Uber / Cheerfy abiertas, stock confirmado con cocina, promos revisadas","Barra organizada, cubertería, cristalería y cafetera limpias","Caducidades revisadas: ningún producto fuera de fecha","Stock de refrescos y cerveza suficiente para el turno","Limpieza: cristales, suelo, mesas, espejos y lámparas","Mesas montadas, QRs en buen estado, servilletas y salsas repuestas","Baños: papel, jabón, ambientador, papelera de pedal con bolsa","Playlist de Juancho's activa a volumen adecuado","Iluminación interior operativa y exterior preparada","Uniformidad completa y limpia de todo el equipo","Incidencias estructurales, de electrodomésticos o sistemas revisadas"]}
@@ -346,8 +353,122 @@ const DATA=[
    {t:"p",x:"Realizarlo solo con TODAS las mesas cerradas y TODOS los pedidos de delivery (Uber y Cheerfy) gestionados."},
    {t:"steps",x:["Contar el efectivo total: la base se queda en 200 € — el resto va a un sobre con fecha, cantidad y local escritos en el frontal, grapado solo por el lateral superior","Cerrar sesión de los datáfonos: se imprime el cierre automáticamente — revisar el total de la remesa","Imprimir el Reporte Z: R → Control de caja → Reporte Z → icono impresora","Cotejar: las diferencias de efectivo y tarjeta deben ser 0 — si no, reportar al supervisor antes de cerrar","Cierre de turno en Revo: R → Control de caja → Cierre de turno → introducir las cantidades cotejadas manualmente → Tick","Grapar el cierre de caja con los de datáfono, guardar en el cajón, foto y enviar al grupo de cierres de caja"]},
    {t:"ban",x:"Las cantidades introducidas son SIEMPRE las contabilizadas manualmente por el encargado. NUNCA las que dé el sistema."},
+   {t:"media",kind:"foto",label:"Sobre de efectivo cumplimentado correctamente"},
    {t:"h",x:"Entradas y salidas de caja"},
    {t:"p",x:"Cualquier movimiento (compras de aceite, compras autorizadas por dirección...): R → Control de caja → Entradas/Salidas → tipo, motivo y cantidad. En las salidas, adjuntar siempre la factura del establecimiento."}
+  ]}
+ ]},
+  {group:"burgers",groupLabel:"Montaje de hamburguesas",menu:true,summary:"Listado completo: ingredientes y alérgenos de las 13 hamburguesas",draft:false,items:[
+  {id:"burger-bacon-juancheeseburger",title:"La Bacon Juancheeseburger",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"media",kind:"foto",label:"Vista explosionada de La Bacon Juancheeseburger con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Carne de vaca","Cheddar fundido","Panceta ibérica macerada al cubata","Salsa barbacoa (en el pan)"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, pescado, soja, lácteos, mostaza, sulfitos"]},b:{h:"Puede contener trazas",x:["Frutos secos, sésamo"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-piccolo",title:"La Piccolo",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"media",kind:"foto",label:"Vista explosionada de La Piccolo con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Carne de vaca","Tomate","Cebolla dulce","Lechuga","Cheddar fundido","Salsa Smoked Mayo (en el pan)"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, soja, lácteos, mostaza, sulfitos"]},b:{h:"Puede contener trazas",x:["Crustáceos, pescado, sésamo, moluscos"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-vegeta",title:"La Vegeta",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"warn",x:"Opción ovolacteovegetariana."},
+   {t:"media",kind:"foto",label:"Vista explosionada de La Vegeta con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Patty vegetal Heura","Tomate fresco","Cebolla dulce","Lechuga","Cheddar fundido","Salsa Smoked Mayo (en el pan)"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, soja, lácteos, sulfitos"]},b:{h:"Puede contener trazas",x:["Crustáceos, pescado, mostaza, sésamo, moluscos"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-juanita",title:"La Juanita",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"media",kind:"foto",label:"Vista explosionada de La Juanita con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Carne de vaca","Cheddar","Pico de gallo con habanero","Aguacate","Salsa Juanchopotle"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, lácteos"]},b:{h:"Puede contener trazas",x:["Soja, mostaza, sésamo"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-carbonara",title:"La Carbonara",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"warn",x:"Edición limitada en colaboración con Negrini."},
+   {t:"media",kind:"foto",label:"Vista explosionada de La Carbonara con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Carne de vaca","Salsa de yemas curadas, pecorino romano y pimienta","Guanciale de cerdo italiano","Parmesano rallado (corona)"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, lácteos"]},b:{h:"Puede contener trazas",x:["—"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-trufada",title:"La Trufada",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"media",kind:"foto",label:"Vista explosionada de La Trufada con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Carne de vaca","Queso raclette","Salsa de brandy con trufa","Trufa recién rallada (corona)"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, lácteos, sulfitos"]},b:{h:"Puede contener trazas",x:["Soja, mostaza, sésamo"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-federer",title:"La Federer",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"warn",x:"NO apta para celíacos: el guiso lleva harina de trigo, no existe versión sin gluten."},
+   {t:"media",kind:"foto",label:"Vista explosionada de La Federer con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Carne de vaca","Queso raclette","Guiso de champiñón y cebolla al oloroso"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, lácteos, sulfitos"]},b:{h:"Puede contener trazas",x:["Soja, mostaza, sésamo"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-blt",title:"La BLT",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"warn",x:"Opción sin gluten: pan sin gluten y SIN salsa en el pan."},
+   {t:"media",kind:"foto",label:"Vista explosionada de La BLT con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Burger de pollo a la parrilla","Panceta ibérica al cubata","Cheddar fundido","Lechuga","Tomate","Cebolla fresca","Salsa Smoked Mayo"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, soja, lácteos, mostaza, sésamo, sulfitos"]},b:{h:"Puede contener trazas",x:["Crustáceos, pescado, frutos secos, apio, moluscos"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-caprichosa",title:"La Caprichosa",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"warn",x:"Edición limitada."},
+   {t:"media",kind:"foto",label:"Vista explosionada de La Caprichosa con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Cortes seleccionados de buey de El Capricho","Havarti fundente","Cecina de Wagyu A5 japonés"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, lácteos"]},b:{h:"Puede contener trazas",x:["—"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-junior",title:"La Junior",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"warn",x:"Versión sencilla y pequeña de nuestras burgers (Juancho's for Kids)."},
+   {t:"media",kind:"foto",label:"Vista explosionada de La Junior con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Carne de vaca","Cheddar fundido","Un poco de kétchup"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, lácteos, apio"]},b:{h:"Puede contener trazas",x:["Soja, mostaza, sésamo"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-bacon-juniorburger",title:"La Bacon Juniorburger",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"warn",x:"Es la Bacon Juancheeseburger con 90 g de carne. Alérgenos heredados de la Bacon Juancheeseburger: no figura en la tabla oficial, validar."},
+   {t:"media",kind:"foto",label:"Vista explosionada de La Bacon Juniorburger con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Carne de vaca (90 g)","Cheddar","Salsa barbacoa (en el pan)","Panceta ibérica macerada al cubata"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, pescado, soja, lácteos, mostaza, sulfitos"]},b:{h:"Puede contener trazas",x:["Frutos secos, sésamo"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
+  ]},
+  {id:"burger-brava",title:"La Brava",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"warn",x:"Edición limitada con JEKES. Opción sin gluten SOLO con pan sin gluten y sin salsa brava (solo en local). No figura en la tabla oficial de alérgenos: pendiente."},
+   {t:"media",kind:"foto",label:"Vista explosionada de La Brava con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Carne de vaca de La Finca","Pollo de JEKES","Queso havarti","Cebolla roja","Pepinillos agridulces","Polvo de torrezno","Salsa brava"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"p",x:"Pendiente de incorporar a la tabla oficial de alérgenos."}
+  ]},
+  {id:"burger-yuxiang-hanbao",title:"La Yuxiang Hanbao",summary:"Ingredientes y alérgenos",blocks:[
+   {t:"warn",x:"Edición limitada con Biang Biang Bar. No figura en la tabla oficial de alérgenos: pendiente."},
+   {t:"media",kind:"foto",label:"Vista explosionada de La Yuxiang Hanbao con sus capas"},
+   {t:"h",x:"Ingredientes"},
+   {t:"list",x:["Berenjena china","Salsa yuxiang de Biang Biang Bar","Queso cheddar","Carne de vaca"]},
+   {t:"h",x:"Alérgenos"},
+   {t:"p",x:"Pendiente de incorporar a la tabla oficial de alérgenos."}
   ]}
  ]},
  {group:"oficina",groupLabel:"Oficina",draft:true,items:[
@@ -408,6 +529,10 @@ function renderHome(){
   }
   groups.forEach(g=>{
     html+=`<div class="sec"><div class="sec-h"><span class="t display">${esc(g.groupLabel)}</span>${g.draft?`<span class="draft-tag">Borrador</span>`:""}</div>`;
+    if(g.menu){
+      html+=`<button class="card" data-menu="${g.group}"><span class="n">★</span><span><div class="tt">Listado completo</div><div class="ss">${esc(g.summary)}</div></span><span class="ar">→</span></button></div>`;
+      return;
+    }
     g.items.forEach((it,i)=>{
       html+=`<button class="card" data-g="${g.group}" data-i="${it.id}">
         <span class="n">${String(i+1).padStart(2,"0")}</span>
@@ -416,15 +541,31 @@ function renderHome(){
     });
     html+=`</div>`;
   });
-  html+=`<div class="note">Prototipo v0.4 · Contenido real de cocina y sala · Identidad Brand Kit 2025. Los huecos «Foto / Vídeo pendiente» marcan dónde irá el material audiovisual.</div></div>`;
+  html+=`<div class="note">Prototipo v0.7 · Fichas de las 13 hamburguesas con ingredientes y alérgenos oficiales (jun 2026) · huecos de foto/vídeo pendientes de material · Identidad Brand Kit 2025. Los huecos «Foto / Vídeo pendiente» marcan dónde irá el material audiovisual.</div></div>`;
   app.innerHTML=html;
   document.getElementById("out").onclick=()=>{profile=null;renderLogin();window.scrollTo(0,0);};
-  app.querySelectorAll(".card").forEach(c=>{
+  app.querySelectorAll(".card[data-i]").forEach(c=>{
     c.onclick=()=>{
       const g=DATA.find(x=>x.group===c.dataset.g);
       const it=g.items.find(x=>x.id===c.dataset.i);
       renderDetail(g,it);window.scrollTo(0,0);
     };
+  });
+  app.querySelectorAll(".card[data-menu]").forEach(c=>{
+    c.onclick=()=>{renderGroupMenu(DATA.find(x=>x.group===c.dataset.menu));window.scrollTo(0,0);};
+  });
+}
+
+function renderGroupMenu(g){
+  let html=header("Inicio")+`<div class="wrap"><h1 class="d-title display">${esc(g.groupLabel)}</h1><p class="d-sum">${esc(g.summary)}</p>`;
+  g.items.forEach((it,i)=>{
+    html+=`<button class="card" data-i="${it.id}"><span class="n">${String(i+1).padStart(2,"0")}</span><span><div class="tt">${esc(it.title)}</div><div class="ss">${esc(it.summary)}</div></span><span class="ar">→</span></button>`;
+  });
+  html+=`</div>`;
+  app.innerHTML=html;
+  document.getElementById("back").onclick=()=>{renderHome();window.scrollTo(0,0);};
+  app.querySelectorAll(".card").forEach(c=>{
+    c.onclick=()=>{const it=g.items.find(x=>x.id===c.dataset.i);renderDetail(g,it,()=>renderGroupMenu(g));window.scrollTo(0,0);};
   });
 }
 
@@ -447,13 +588,13 @@ function blockHtml(b){
   }
 }
 
-function renderDetail(g,it){
+function renderDetail(g,it,onBack){
   let html=header(g.groupLabel)+`<div class="wrap">
     <h1 class="d-title display">${esc(it.title)}</h1>
     <p class="d-sum">${esc(it.summary)}</p>`+
     it.blocks.map(blockHtml).join("")+`</div>`;
   app.innerHTML=html;
-  document.getElementById("back").onclick=()=>{renderHome();window.scrollTo(0,0);};
+  document.getElementById("back").onclick=()=>{(onBack||renderHome)();window.scrollTo(0,0);};
   app.querySelectorAll("[data-ck]").forEach(ck=>{
     const items=ck.querySelectorAll(".ck-item");
     const pr=ck.querySelector(".pr");
