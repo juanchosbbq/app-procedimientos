@@ -241,6 +241,10 @@ const STATIC = {
   "/": { file: "public/index.html", type: "text/html; charset=utf-8" },
   "/index.html": { file: "public/index.html", type: "text/html; charset=utf-8" },
   "/app.js": { file: "public/app.js", type: "text/javascript; charset=utf-8" },
+  "/favicon.ico": { file: "public/favicon.ico", type: "image/x-icon", cache: "public, max-age=604800" },
+  "/icons/icon-192.png": { file: "public/icons/icon-192.png", type: "image/png", cache: "public, max-age=604800" },
+  "/icons/apple-touch-icon.png": { file: "public/icons/apple-touch-icon.png", type: "image/png", cache: "public, max-age=604800" },
+  "/apple-touch-icon.png": { file: "public/icons/apple-touch-icon.png", type: "image/png", cache: "public, max-age=604800" },
 };
 const MIME = { ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp", ".mp4": "video/mp4" };
 
@@ -517,7 +521,7 @@ const server = http.createServer(async (req, res) => {
     const st = STATIC[p];
     if (st) {
       const buf = await fs.promises.readFile(path.join(ROOT, st.file));
-      return send(res, 200, buf, st.type, { "Cache-Control": "no-cache" });
+      return send(res, 200, buf, st.type, { "Cache-Control": st.cache || "no-cache" });
     }
 
     if (p === "/healthz") return ok(res);

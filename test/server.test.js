@@ -66,6 +66,14 @@ test("el HTML no contiene contenido; sin sesión no hay nada", async () => {
   for (const f of ["/server.js", "/store.js", "/content/data.js", "/config/admins.js", "/data/users.json"]) assert.strictEqual((await fetch(BASE + f)).status, 404);
 });
 
+test("los iconos se sirven sin sesión", async () => {
+  for (const [f, t] of [["/favicon.ico", "image/x-icon"], ["/icons/icon-192.png", "image/png"], ["/apple-touch-icon.png", "image/png"]]) {
+    const r = await fetch(BASE + f);
+    assert.strictEqual(r.status, 200, f);
+    assert.strictEqual(r.headers.get("content-type"), t);
+  }
+});
+
 test("los dos administradores existen y el admin lo ve todo", async () => {
   const r = await (await post("/api/admin/users", {}, adminCookie)).json();
   const admins = r.users.filter((u) => u.profile === "admin").map((u) => u.email);
