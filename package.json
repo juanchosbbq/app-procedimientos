@@ -1,11 +1,12 @@
 {
   "name": "procedimientos-juanchos",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
-  "scripts": {
-    "start": "serve -s . -l tcp://0.0.0.0:${PORT:-3000}"
+  "engines": {
+    "node": ">=18"
   },
-  "dependencies": {
-    "serve": "^14.2.3"
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/*.test.js"
   }
 }
