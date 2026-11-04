@@ -1,14 +1,22 @@
 "use strict";
 /* ====== CONTENIDO DE LA APP (editar aquí) ======
    Este fichero SOLO se lee en el servidor: cada puesto recibe únicamente
-   los grupos que le corresponden según PROFILES. Los códigos de acceso NO
-   van aquí: se configuran como variables de entorno (ver README). */
+   los grupos que le corresponden según PROFILES. Quién tiene acceso y con
+   qué puesto se define en config/users.js (ver README).
+
+   PROFILES: label = nombre visible · groups = secciones que ve ·
+   items (opcional) = para una sección, solo esas fichas (por id). */
 const PROFILES={
   cocina:{label:"Equipo de Cocina",groups:["cocina","burgers"]},
   jefe_cocina:{label:"Jefe de Cocina",groups:["cocina","sup_cocina","burgers"]},
   sala:{label:"Equipo de Sala",groups:["sala","burgers"]},
   jefe_sala:{label:"Encargado de Sala",groups:["sala","sup_sala","burgers"]},
-  oficina:{label:"Oficina",groups:["oficina"]}
+  oficina:{label:"Oficina",groups:["oficina"]},
+  // Igual que Jefe de Cocina, pero con un listado reducido de hamburguesas.
+  cuyna:{label:"Jefe de Cocina · Cuyna",groups:["cocina","sup_cocina","burgers"],items:{burgers:[
+    "burger-bacon-juancheeseburger","burger-bacon-juniorburger","burger-junior",
+    "burger-piccolo","burger-vegeta","burger-carbonara"
+  ]}}
 };
 const QUICK_COCINA=[
   {v:"71 °C",k:"Temp. interior mínima hamburguesa"},
@@ -256,7 +264,7 @@ const DATA=[
    {t:"p",x:"Cualquier movimiento (compras de aceite, compras autorizadas por dirección...): R → Control de caja → Entradas/Salidas → tipo, motivo y cantidad. En las salidas, adjuntar siempre la factura del establecimiento."}
   ]}
  ]},
-  {group:"burgers",groupLabel:"Montaje de hamburguesas",menu:true,summary:"Listado completo: ingredientes y alérgenos de las 12 hamburguesas",draft:false,items:[
+  {group:"burgers",groupLabel:"Montaje de hamburguesas",menu:true,summary:"Listado completo: ingredientes y alérgenos de las {n} hamburguesas",draft:false,items:[
   {id:"burger-bacon-juancheeseburger",title:"La Bacon Juancheeseburger",summary:"Ingredientes y alérgenos",blocks:[
    {t:"media",kind:"foto",label:"Vista explosionada de La Bacon Juancheeseburger con sus capas",img:"assets/burgers/bacon-juancheeseburger.jpg"},
    {t:"h",x:"Ingredientes"},

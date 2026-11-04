@@ -22,40 +22,71 @@ async function logout(){
 const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
 
 function renderLogin(){
+  let email="";
   app.innerHTML=`
   <div class="login">
     <div class="tape"></div>
     <div class="login-body">
       <div class="brand">★ JUANCHO'S BBQ · PASIÓN A LA PARRILLA</div>
       <h1 class="display">Procedimientos<br>de equipo</h1>
-      <p class="sub">Introduce el código de tu puesto para ver tus procedimientos.</p>
-      <input class="code-input" id="code" placeholder="CÓDIGO" autocomplete="off" aria-label="Código de acceso">
+      <p class="sub" id="sub"></p>
+      <input class="code-input" id="field">
       <div class="err" id="err" style="display:none"></div>
-      <button class="enter-btn" id="go">Entrar</button>
-      <div class="hint">Acceso restringido al equipo. Si no tienes código o ha dejado de funcionar, pídeselo a tu responsable.</div>
+      <button class="enter-btn" id="go"></button>
+      <button class="link-btn" id="alt" style="display:none"></button>
+      <div class="hint">Acceso restringido al equipo. Si tu correo no recibe el código, pide a tu responsable que te dé de alta.</div>
     </div>
     <div class="tape"></div>
   </div>`;
-  const input=document.getElementById("code");
+  const field=document.getElementById("field");
+  const sub=document.getElementById("sub");
   const err=document.getElementById("err");
   const btn=document.getElementById("go");
+  const alt=document.getElementById("alt");
   const showErr=m=>{err.textContent=m;err.style.display="block";};
-  let busy=false;
-  const go=async()=>{
-    const code=input.value.trim();
-    if(!code||busy)return;
+  const hideErr=()=>{err.style.display="none";};
+  let step="email",busy=false;
+
+  function setStep(s){
+    step=s;hideErr();field.value="";
+    if(s==="email"){
+      sub.textContent="Escribe tu correo y te enviaremos un código para entrar.";
+      Object.assign(field,{type:"email",placeholder:"tu@correo.com",autocomplete:"email",inputMode:"email"});
+      field.setAttribute("aria-label","Correo electrónico");field.classList.add("is-email");
+      btn.textContent="Enviar código";alt.style.display="none";
+    }else{
+      sub.textContent=`Si ${email} tiene acceso, te hemos enviado un código de 6 dígitos. Caduca en 10 minutos.`;
+      Object.assign(field,{type:"text",placeholder:"000000",autocomplete:"one-time-code",inputMode:"numeric",maxLength:6});
+      field.setAttribute("aria-label","Código recibido por correo");field.classList.remove("is-email");
+      btn.textContent="Entrar";alt.textContent="Usar otro correo";alt.style.display="block";
+    }
+    field.focus();
+  }
+
+  async function go(){
+    const v=field.value.trim();
+    if(!v||busy)return;
     busy=true;btn.disabled=true;
     try{
-      const r=await api("/api/login",{code});
-      if(r.status===200){input.value="";await loadSession();return;}
-      if(r.status===429)showErr("Demasiados intentos. Espera unos minutos y vuelve a probar.");
-      else showErr("Código no válido. Revisa con tu responsable.");
+      if(step==="email"){
+        const r=await api("/api/login/start",{email:v});
+        if(r.status===200){email=v;setStep("code");}
+        else if(r.status===429)showErr("Demasiados intentos. Espera unos minutos y vuelve a probar.");
+        else showErr("Revisa que el correo esté bien escrito.");
+      }else{
+        const r=await api("/api/login/verify",{email,code:v});
+        if(r.status===200){await loadSession();return;}
+        if(r.status===429)showErr("Demasiados intentos. Espera unos minutos y vuelve a probar.");
+        else showErr("Código incorrecto o caducado. Revísalo o pide uno nuevo con «Usar otro correo».");
+      }
     }catch(e){showErr("No se pudo conectar. Revisa la conexión e inténtalo de nuevo.");}
     busy=false;btn.disabled=false;
-  };
-  document.getElementById("go").onclick=go;
-  input.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
-  input.addEventListener("input",()=>document.getElementById("err").style.display="none");
+  }
+  btn.onclick=go;
+  alt.onclick=()=>setStep("email");
+  field.addEventListener("keydown",e=>{if(e.key==="Enter")go();});
+  field.addEventListener("input",hideErr);
+  setStep("email");
 }
 
 function header(backLabel){
@@ -90,7 +121,7 @@ function renderHome(){
     });
     html+=`</div>`;
   });
-  html+=`<div class="note">Prototipo v0.7 · Fichas de las 12 hamburguesas con ingredientes y alérgenos oficiales (jun 2026) · huecos de foto/vídeo pendientes de material · Identidad Brand Kit 2025. Los huecos «Foto / Vídeo pendiente» marcan dónde irá el material audiovisual.</div></div>`;
+  html+=`<div class="note">Prototipo v0.7 · Fichas de hamburguesas con ingredientes y alérgenos oficiales (jun 2026) · huecos de foto/vídeo pendientes de material · Identidad Brand Kit 2025. Los huecos «Foto / Vídeo pendiente» marcan dónde irá el material audiovisual.</div></div>`;
   app.innerHTML=html;
   document.getElementById("out").onclick=logout;
   app.querySelectorAll(".card[data-i]").forEach(c=>{

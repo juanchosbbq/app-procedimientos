@@ -2,28 +2,39 @@
 Webapp de procedimientos por puesto. Repo PRIVADO — uso interno.
 
 ## Estructura
-- `content/data.js` — **el contenido** (puestos, datos críticos, procedimientos, hamburguesas). Solo lo lee el servidor.
-- `public/` — la interfaz (`index.html` + `app.js`). No contiene códigos ni contenido.
-- `assets/` — fotos. Solo se sirven con sesión iniciada y al puesto que las tiene en su contenido.
+- `config/users.js` — **quién tiene acceso** y con qué puesto (un correo por línea).
+- `content/data.js` — **el contenido**: puestos (`PROFILES`), datos críticos, procedimientos, hamburguesas. Solo lo lee el servidor.
+- `public/` — la interfaz (`index.html` + `app.js`). No contiene contenido.
+- `assets/` — fotos. Solo se sirven con sesión y al puesto que las tiene en su contenido.
 - `server.js` — servidor Node sin dependencias: login, sesiones y control de acceso.
 
-## Acceso
-- Cada puesto tiene su código, que se valida en el servidor.
-- Tras entrar, la sesión dura 12 h (cookie firmada, `HttpOnly`, `SameSite=Strict`, `Secure` en HTTPS).
-- Cada puesto recibe solo sus secciones (p. ej. Oficina no ve las de cocina).
-- 5 intentos fallidos desde la misma IP → bloqueo de 15 min.
-- **Rotar el código de un puesto** (cambiar su variable) expulsa al momento a quien estuviera dentro con el código anterior.
+## Acceso por correo
+1. La persona escribe su correo. Si está en `config/users.js`, recibe un código de 6 dígitos (caduca en 10 min, un solo uso, máx. 5 intentos).
+2. Con el código entra; la sesión dura 12 h (cookie firmada, `HttpOnly`, `SameSite=Strict`, `Secure` en HTTPS).
+
+- La pantalla responde igual exista o no el correo (no revela quién tiene acceso).
+- Máx. 3 códigos por correo y 10 códigos erróneos por IP cada 15 min.
+- **Dar de alta / baja / cambiar de puesto**: editar `config/users.js` y desplegar. Quien se quite o cambie de puesto pierde la sesión al momento.
 - Cambiar `SESSION_SECRET` cierra todas las sesiones.
+- Los accesos quedan en el log de Railway (`[auth] acceso de ...`).
+
+## Puestos
+| Puesto | Antiguo código | Ve |
+|---|---|---|
+| `cocina` | COCINA26 | Cocina + 12 hamburguesas |
+| `jefe_cocina` | JEFE26 | Cocina + Supervisión de cocina + 12 hamburguesas |
+| `cuyna` | CUYNA26 | Como `jefe_cocina`, pero solo 6 hamburguesas: Bacon Juancheeseburger, Bacon Juniorburger, Junior, Piccolo, Vegeta y Carbonara |
+| `sala` | SALA26 | Sala + 12 hamburguesas |
+| `jefe_sala` | JEFESALA26 | Sala + Encargado de turno + 12 hamburguesas |
+| `oficina` | OFICINA26 | Oficina |
+
+Para limitar las fichas de un puesto, en `PROFILES` se usa `items:{grupo:[ids]}` (ver `cuyna`).
 
 ## Configuración (Railway → servicio → Variables)
-Ver `.env.example`. Obligatorias:
-- `SESSION_SECRET` (≥ 32 caracteres aleatorios)
-- `CODE_COCINA`, `CODE_JEFE_COCINA`, `CODE_SALA`, `CODE_JEFE_SALA`, `CODE_OFICINA` (≥ 8 caracteres; si falta uno, ese puesto queda desactivado)
-
-Si falta `SESSION_SECRET` o no hay ningún código, el servidor no arranca (a propósito).
+Ver `.env.example`: `SESSION_SECRET`, `RESEND_API_KEY`, `MAIL_FROM`. Si falta alguna, el servidor no arranca (a propósito).
 
 ## Local
 ```
-SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))") CODE_COCINA=prueba123 npm start
+SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))") MAIL_DEV_LOG=1 npm start
 npm test
 ```

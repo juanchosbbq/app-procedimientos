@@ -2,15 +2,16 @@
 /*
  * Servidor de la app de procedimientos (sin dependencias externas).
  *
- * - Los códigos de acceso se validan AQUÍ, nunca en el navegador.
- *   Se leen de variables de entorno (CODE_COCINA, CODE_JEFE_COCINA, ...).
- * - Tras un login correcto se emite una cookie de sesión firmada (HMAC),
- *   HttpOnly + SameSite=Strict (+ Secure en HTTPS).
- * - Cada puesto solo recibe el contenido de sus grupos (/api/content)
- *   y solo puede descargar las imágenes de esos grupos (/assets/...).
- * - Cambiar el código de un puesto invalida al momento las sesiones
- *   abiertas de ese puesto. Cambiar SESSION_SECRET cierra todas.
- * - Limitación de intentos fallidos de login por IP.
+ * Acceso por correo:
+ *  1. La persona escribe su correo. Si está en config/users.js, recibe un
+ *     código de 6 dígitos válido 10 minutos (un solo uso, máx. 5 intentos).
+ *  2. Con el código correcto se emite una cookie de sesión firmada (HMAC),
+ *     HttpOnly + SameSite=Strict (+ Secure en HTTPS).
+ *  3. En cada petición se vuelve a comprobar que el correo sigue en la lista
+ *     y con el mismo puesto: quitar o cambiar a alguien surte efecto al momento.
+ *
+ * Cada puesto solo recibe su contenido (/api/content) y sus fotos (/assets/...).
+ * La respuesta al pedir código es idéntica exista o no el correo.
  */
 const http = require("http");
 const fs = require("fs");
@@ -22,9 +23,16 @@ const { PROFILES, QUICK_COCINA, QUICK_SALA, DATA } = require("./content/data.js"
 const PORT = Number(process.env.PORT) || 3000;
 const SESSION_SECRET = process.env.SESSION_SECRET || "";
 const SESSION_HOURS = Number(process.env.SESSION_HOURS) || 12;
-const MAX_FAILS = 5; // intentos fallidos permitidos por IP...
-const FAIL_WINDOW_MS = 15 * 60 * 1000; // ...en esta ventana
-const MIN_CODE_LEN = 8;
+const USERS_FILE = process.env.USERS_FILE || path.join(__dirname, "config", "users.js");
+const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
+const MAIL_FROM = process.env.MAIL_FROM || "";
+const MAIL_DEV_LOG = process.env.MAIL_DEV_LOG === "1"; // SOLO en local: muestra el código en consola en vez de enviarlo
+const OTP_TTL_MS = 10 * 60 * 1000; // validez del código enviado por correo
+const OTP_MAX_TRIES = 5; // intentos por código
+const SENDS_PER_EMAIL = 3; // códigos por correo...
+const IP_MAX_FAILS = 10; // fallos de verificación por IP...
+const IP_MAX_STARTS = 20; // peticiones de código por IP...
+const WINDOW_MS = 15 * 60 * 1000; // ...en esta ventana
 const COOKIE = "jbbq_sid";
 
 function fatal(msg) {
@@ -34,24 +42,29 @@ function fatal(msg) {
 if (SESSION_SECRET.length < 32) {
   fatal("Falta SESSION_SECRET (mínimo 32 caracteres). Genera uno con: node -e \"console.log(require('crypto').randomBytes(32).toString('hex'))\"");
 }
-
-const normCode = (c) => String(c || "").trim().toUpperCase();
-
-// Un código por puesto: CODE_<PUESTO EN MAYÚSCULAS>. Puesto sin código = desactivado.
-const CODES = {};
-for (const profile of Object.keys(PROFILES)) {
-  const code = normCode(process.env["CODE_" + profile.toUpperCase()]);
-  if (!code) continue;
-  if (code.length < MIN_CODE_LEN) fatal(`CODE_${profile.toUpperCase()} debe tener al menos ${MIN_CODE_LEN} caracteres.`);
-  CODES[profile] = code;
+if (!MAIL_DEV_LOG && (!RESEND_API_KEY || !MAIL_FROM)) {
+  fatal("Faltan RESEND_API_KEY y MAIL_FROM para enviar los códigos por correo (en local puedes usar MAIL_DEV_LOG=1).");
 }
-const seen = new Set();
-for (const [p, c] of Object.entries(CODES)) {
-  if (seen.has(c)) fatal(`El código de ${p} está repetido en otro puesto.`);
-  seen.add(c);
+
+const normEmail = (e) => String(e || "").trim().toLowerCase();
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Lista de personas -> puesto.
+const USERS = new Map();
+{
+  let raw;
+  try { raw = require(USERS_FILE); } catch (e) { fatal(`No se puede leer ${USERS_FILE}: ${e.message}`); }
+  for (const [email, profile] of Object.entries(raw || {})) {
+    const e = normEmail(email);
+    if (!EMAIL_RE.test(e)) fatal(`Correo no válido en la lista de accesos: "${email}"`);
+    if (!PROFILES[profile]) fatal(`Puesto desconocido "${profile}" para ${e}. Puestos: ${Object.keys(PROFILES).join(", ")}`);
+    if (USERS.has(e)) fatal(`Correo repetido en la lista de accesos: ${e}`);
+    USERS.set(e, profile);
+  }
 }
-if (!Object.keys(CODES).length) fatal("No hay ningún código configurado (CODE_COCINA, CODE_SALA, ...).");
-console.log("[config] Puestos activos: " + Object.keys(CODES).join(", "));
+if (!USERS.size) console.warn("[config] AVISO: la lista de accesos está vacía; nadie podrá entrar.");
+else console.log(`[config] ${USERS.size} persona(s) con acceso.`);
+if (MAIL_DEV_LOG) console.warn("[config] AVISO: MAIL_DEV_LOG=1, los códigos se muestran en consola y NO se envían. No usar en producción.");
 
 /* ====== UTILIDADES CRIPTO ====== */
 const hmac = (data) => crypto.createHmac("sha256", SESSION_SECRET).update(data).digest();
@@ -64,23 +77,12 @@ function safeEqual(a, b) {
   return crypto.timingSafeEqual(ha, hb);
 }
 
-// Huella del código vigente de un puesto: si el código cambia, la huella cambia
-// y las sesiones emitidas con el código anterior dejan de valer.
-const codeFingerprint = (profile) => b64u(hmac("code:" + profile + ":" + CODES[profile])).slice(0, 16);
-
-function findProfileByCode(code) {
-  const c = normCode(code);
-  let found = null;
-  // Recorre todos los puestos siempre (sin cortocircuito) para no filtrar tiempos.
-  for (const [p, real] of Object.entries(CODES)) if (safeEqual(c, real) && !found) found = p;
-  return found;
-}
-
-function makeToken(profile) {
-  const payload = b64u(JSON.stringify({ p: profile, v: codeFingerprint(profile), exp: Date.now() + SESSION_HOURS * 3600e3 }));
+function makeToken(email, profile) {
+  const payload = b64u(JSON.stringify({ e: email, p: profile, exp: Date.now() + SESSION_HOURS * 3600e3 }));
   return payload + "." + b64u(hmac(payload));
 }
 
+// Devuelve {email, profile} o null.
 function readToken(token) {
   if (typeof token !== "string") return null;
   const [payload, sig] = token.split(".");
@@ -91,51 +93,92 @@ function readToken(token) {
   let data;
   try { data = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")); } catch { return null; }
   if (!data || typeof data.exp !== "number" || data.exp < Date.now()) return null;
-  if (!CODES[data.p] || data.v !== codeFingerprint(data.p)) return null;
-  return data.p;
+  if (USERS.get(data.e) !== data.p) return null; // fuera de la lista o puesto cambiado
+  return { email: data.e, profile: data.p };
+}
+
+/* ====== CÓDIGOS DE UN SOLO USO ====== */
+const otps = new Map(); // email -> {hash, exp, tries}
+const otpHash = (email, code) => b64u(hmac("otp:" + email + ":" + code));
+
+function issueOtp(email) {
+  const code = String(crypto.randomInt(0, 1e6)).padStart(6, "0");
+  otps.set(email, { hash: otpHash(email, code), exp: Date.now() + OTP_TTL_MS, tries: 0 });
+  return code;
+}
+
+function checkOtp(email, code) {
+  const o = otps.get(email);
+  if (!o) return false;
+  if (o.exp < Date.now() || o.tries >= OTP_MAX_TRIES) { otps.delete(email); return false; }
+  o.tries++;
+  if (!safeEqual(o.hash, otpHash(email, String(code).replace(/\D/g, "")))) return false;
+  otps.delete(email); // un solo uso
+  return true;
+}
+
+async function sendOtpMail(email, code) {
+  const text = `Tu código para entrar en Procedimientos de equipo es: ${code}\n\nCaduca en 10 minutos. Si no lo has pedido tú, ignora este correo.`;
+  if (MAIL_DEV_LOG) { console.log(`[mail-dev] código para ${email}: ${code}`); return; }
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: MAIL_FROM, to: [email], subject: `${code} es tu código de acceso · Juancho's BBQ`, text,
+      html: `<p>Tu código para entrar en <b>Procedimientos de equipo</b> es:</p><p style="font-size:28px;font-weight:700;letter-spacing:6px;font-family:monospace">${code}</p><p style="color:#6B6357">Caduca en 10 minutos. Si no lo has pedido tú, ignora este correo.</p>`,
+    }),
+  });
+  if (!r.ok) throw new Error(`Resend ${r.status}: ${(await r.text()).slice(0, 300)}`);
 }
 
 /* ====== LIMITACIÓN DE INTENTOS ====== */
-const fails = new Map(); // ip -> {n, first}
+function makeLimiter(max) {
+  const m = new Map(); // key -> {n, first}
+  setInterval(() => { const now = Date.now(); for (const [k, f] of m) if (now - f.first > WINDOW_MS) m.delete(k); }, 60e3).unref();
+  return {
+    blocked(k) { const f = m.get(k); if (!f) return false; if (Date.now() - f.first > WINDOW_MS) { m.delete(k); return false; } return f.n >= max; },
+    hit(k) { const f = m.get(k); if (!f || Date.now() - f.first > WINDOW_MS) m.set(k, { n: 1, first: Date.now() }); else f.n++; },
+    reset(k) { m.delete(k); },
+  };
+}
+const ipFails = makeLimiter(IP_MAX_FAILS);
+const ipStarts = makeLimiter(IP_MAX_STARTS);
+const emailSends = makeLimiter(SENDS_PER_EMAIL);
+setInterval(() => { const now = Date.now(); for (const [e, o] of otps) if (o.exp < now) otps.delete(e); }, 60e3).unref();
+
 function clientIp(req) {
   // Railway (y la mayoría de proxies) añaden la IP real como primer valor de X-Forwarded-For.
   const xff = req.headers["x-forwarded-for"];
   return (xff ? String(xff).split(",")[0] : req.socket.remoteAddress || "").trim();
 }
-function isBlocked(ip) {
-  const f = fails.get(ip);
-  if (!f) return false;
-  if (Date.now() - f.first > FAIL_WINDOW_MS) { fails.delete(ip); return false; }
-  return f.n >= MAX_FAILS;
-}
-function registerFail(ip) {
-  const f = fails.get(ip);
-  if (!f || Date.now() - f.first > FAIL_WINDOW_MS) fails.set(ip, { n: 1, first: Date.now() });
-  else f.n++;
-}
-setInterval(() => {
-  const now = Date.now();
-  for (const [ip, f] of fails) if (now - f.first > FAIL_WINDOW_MS) fails.delete(ip);
-}, 60e3).unref();
 
 /* ====== CONTENIDO POR PUESTO ====== */
-function contentFor(profile) {
+function buildContent(profile) {
   const def = PROFILES[profile];
+  const groups = DATA.filter((g) => def.groups.includes(g.group)).map((g) => {
+    const only = def.items && def.items[g.group];
+    const items = only ? g.items.filter((it) => only.includes(it.id)) : g.items;
+    return { ...g, items, summary: g.summary && g.summary.replace("{n}", items.length) };
+  });
   return {
     label: def.label,
     quick: def.groups.includes("cocina") ? QUICK_COCINA : def.groups.includes("sala") ? QUICK_SALA : null,
-    groups: DATA.filter((g) => def.groups.includes(g.group)),
+    groups,
   };
 }
-
-// Imagen -> grupos que la usan, para servir cada imagen solo a quien puede verla.
-const ASSET_GROUPS = new Map();
-for (const g of DATA) for (const it of g.items) for (const b of it.blocks) {
-  if (b.img) {
-    const key = "/" + b.img.replace(/^\/+/, "");
-    if (!ASSET_GROUPS.has(key)) ASSET_GROUPS.set(key, new Set());
-    ASSET_GROUPS.get(key).add(g.group);
+// Contenido y fotos permitidas de cada puesto, calculados al arrancar.
+const CONTENT = {};
+const ASSETS = {};
+for (const profile of Object.keys(PROFILES)) {
+  const def = PROFILES[profile];
+  for (const [g, ids] of Object.entries(def.items || {})) {
+    const known = (DATA.find((x) => x.group === g) || { items: [] }).items.map((i) => i.id);
+    for (const id of ids) if (!known.includes(id)) fatal(`PROFILES.${profile}: la ficha "${id}" no existe en "${g}".`);
   }
+  CONTENT[profile] = buildContent(profile);
+  ASSETS[profile] = new Set();
+  for (const g of CONTENT[profile].groups) for (const it of g.items) for (const b of it.blocks)
+    if (b.img) ASSETS[profile].add("/" + b.img.replace(/^\/+/, ""));
 }
 
 /* ====== HTTP ====== */
@@ -224,22 +267,44 @@ const server = http.createServer(async (req, res) => {
   const p = url.pathname;
 
   try {
-    if (p === "/api/login") {
+    if (p === "/api/login/start" || p === "/api/login/verify") {
       if (req.method !== "POST") return send(res, 405, { error: "method" }, undefined, { Allow: "POST" });
       if (!sameOrigin(req)) return send(res, 403, { error: "origin" });
       if (!String(req.headers["content-type"] || "").startsWith("application/json")) return send(res, 415, { error: "type" });
       const ip = clientIp(req);
-      if (isBlocked(ip)) return send(res, 429, { error: "too_many_attempts" }, undefined, { "Retry-After": String(FAIL_WINDOW_MS / 1000) });
       const body = await readJson(req);
-      const profile = body && typeof body.code === "string" ? findProfileByCode(body.code) : null;
-      if (!profile) {
-        registerFail(ip);
-        console.warn(`[auth] intento fallido desde ${ip}`);
+      const email = normEmail(body && body.email);
+      if (!EMAIL_RE.test(email) || email.length > 254) return send(res, 400, { error: "invalid_email" });
+
+      if (p === "/api/login/start") {
+        if (ipStarts.blocked(ip)) return send(res, 429, { error: "too_many_attempts" });
+        ipStarts.hit(ip);
+        // Misma respuesta exista o no el correo; el envío va en segundo plano.
+        if (USERS.has(email) && !emailSends.blocked(email)) {
+          emailSends.hit(email);
+          const code = issueOtp(email);
+          sendOtpMail(email, code)
+            .then(() => console.log(`[auth] código enviado a ${email}`))
+            .catch((e) => console.error(`[auth] error enviando código a ${email}: ${e.message}`));
+        } else {
+          console.warn(`[auth] código pedido para ${email} desde ${ip} (${USERS.has(email) ? "límite de envíos" : "no está en la lista"})`);
+        }
+        return send(res, 200, { ok: true });
+      }
+
+      // verify
+      if (ipFails.blocked(ip)) return send(res, 429, { error: "too_many_attempts" });
+      const code = body && typeof body.code === "string" ? body.code : "";
+      const profile = USERS.get(email);
+      if (!profile || !checkOtp(email, code)) {
+        ipFails.hit(ip);
+        console.warn(`[auth] código incorrecto para ${email} desde ${ip}`);
         return send(res, 401, { error: "invalid_code" });
       }
-      fails.delete(ip);
-      console.log(`[auth] acceso de ${profile} desde ${ip}`);
-      return send(res, 200, { ok: true }, undefined, { "Set-Cookie": sessionCookie(req, makeToken(profile), SESSION_HOURS * 3600) });
+      ipFails.reset(ip);
+      emailSends.reset(email);
+      console.log(`[auth] acceso de ${email} (${profile}) desde ${ip}`);
+      return send(res, 200, { ok: true }, undefined, { "Set-Cookie": sessionCookie(req, makeToken(email, profile), SESSION_HOURS * 3600) });
     }
 
     if (p === "/api/logout") {
@@ -251,17 +316,16 @@ const server = http.createServer(async (req, res) => {
     if (req.method !== "GET" && req.method !== "HEAD") return send(res, 405, { error: "method" }, undefined, { Allow: "GET, HEAD" });
 
     if (p === "/api/content") {
-      const profile = readToken(getCookie(req, COOKIE));
-      if (!profile) return send(res, 401, { error: "unauthorized" });
-      return send(res, 200, contentFor(profile));
+      const sess = readToken(getCookie(req, COOKIE));
+      if (!sess) return send(res, 401, { error: "unauthorized" });
+      return send(res, 200, { ...CONTENT[sess.profile], email: sess.email });
     }
 
     if (p.startsWith("/assets/")) {
-      const profile = readToken(getCookie(req, COOKIE));
-      if (!profile) return send(res, 401, "No autorizado", "text/plain; charset=utf-8");
-      const groups = ASSET_GROUPS.get(p);
-      // Solo se sirven imágenes referenciadas en el contenido y de grupos del puesto.
-      if (!groups || !PROFILES[profile].groups.some((g) => groups.has(g))) return send(res, 404, "No encontrado", "text/plain; charset=utf-8");
+      const sess = readToken(getCookie(req, COOKIE));
+      if (!sess) return send(res, 401, "No autorizado", "text/plain; charset=utf-8");
+      // Solo se sirven imágenes que aparecen en el contenido de ese puesto.
+      if (!ASSETS[sess.profile].has(p)) return send(res, 404, "No encontrado", "text/plain; charset=utf-8");
       const file = path.join(ROOT, p);
       if (!file.startsWith(path.join(ROOT, "assets") + path.sep)) return send(res, 404, "No encontrado", "text/plain; charset=utf-8");
       const buf = await fs.promises.readFile(file);
