@@ -363,14 +363,14 @@ const DATA=[
   ]},
   
   {id:"burger-margarita-pagana",title:"La Margarita Pagana",summary:"Ingredientes y alérgenos",blocks:[
-   {t:"warn",x:"No figura en la tabla oficial de alérgenos: pendiente de validar."},
    {t:"media",kind:"foto",label:"Vista explosionada de La Margarita Pagana con sus capas",img:"assets/burgers/margarita-pagana.jpg"},
    {t:"h",x:"Montaje (de abajo arriba)"},
    {t:"steps",x:["Pan inferior","Tomate en rodaja","Carne de vaca (180 g)","Mozzarella fiordilatte fundida sobre la carne","Confitura de tomate","Gremolata","Salsa de tomate en 2 círculos","Pan superior"]},
    {t:"h",x:"Ingredientes"},
    {t:"list",x:["Carne de vaca (180 g)","Mozzarella fiordilatte","Confitura de tomate","Gremolata","Salsa de tomate","Tomate en rodaja"]},
    {t:"h",x:"Alérgenos"},
-   {t:"p",x:"Pendiente de incorporar a la tabla oficial de alérgenos."}
+   {t:"split",a:{h:"Contiene",x:["Gluten, huevos, lácteos"]},b:{h:"Puede contener trazas",x:["—"]}},
+   {t:"p",x:"Con pan sin gluten cambian los alérgenos: consultar la tabla oficial."}
   ]}
  ]},
  {group:"oficina",groupLabel:"Oficina",draft:true,items:[
