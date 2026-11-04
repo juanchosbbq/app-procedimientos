@@ -1,12 +1,13 @@
 "use strict";
 /* ====== CONTENIDO DE LA APP (editar aquí) ======
    Este fichero SOLO se lee en el servidor: cada puesto recibe únicamente
-   los grupos que le corresponden según PROFILES. Quién tiene acceso y con
-   qué puesto se define en config/users.js (ver README).
+   los grupos que le corresponden según PROFILES. Los usuarios y su
+   categoría se gestionan desde el panel de administración de la app.
 
    PROFILES: label = nombre visible · groups = secciones que ve ·
    items (opcional) = para una sección, solo esas fichas (por id). */
 const PROFILES={
+  admin:{label:"Administración",groups:["cocina","sup_cocina","sala","sup_sala","burgers","oficina"]},
   cocina:{label:"Equipo de Cocina",groups:["cocina","burgers"]},
   jefe_cocina:{label:"Jefe de Cocina",groups:["cocina","sup_cocina","burgers"]},
   sala:{label:"Equipo de Sala",groups:["sala","burgers"]},
